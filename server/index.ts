@@ -57,7 +57,7 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
     });
   });
 
-  socket.on(EVENT.POSITION_UPDATE, (keyDown) => {
+  socket.on(EVENT.POSITION_UPDATE, (keyDown: KeyDown) => {
     // Client wants us to update the position
     const allowedKeyEvents =
       keyDown === "ArrowUp" ||
