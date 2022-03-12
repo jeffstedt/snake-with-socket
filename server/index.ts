@@ -29,7 +29,8 @@ type Msg =
   | { type: 'Playing' }
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
-  | { type: 'PositionUpdate'; socketId: string; keyDown: KeyDown }
+  | { type: 'NewDirection'; playerId: string; keyDown: KeyDown }
+  | { type: 'NewPosition'; playerId: string; direction: PlayerDirection }
 
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
@@ -50,16 +51,31 @@ function updateModel(prevModel: Model, msg: Msg) {
         players: model.players?.filter((player) => player.id === msg.socketId) || [],
       }
       break
-    case 'PositionUpdate':
+    case 'NewDirection':
       model = {
         ...prevModel,
         state: 'Playing',
         players:
           model.players?.map((player) =>
-            player.id === msg.socketId
+            player.id === msg.playerId
               ? {
                   ...player,
-                  position: getNewPlayerPosition(player.position, msg.keyDown),
+                  direction: getNewPlayerDirection(msg.keyDown),
+                }
+              : player
+          ) || [],
+      }
+      break
+    case 'NewPosition':
+      model = {
+        ...prevModel,
+        state: 'Playing',
+        players:
+          model.players?.map((player) =>
+            player.id === msg.playerId
+              ? {
+                  ...player,
+                  position: getNewPlayerPosition(player.position, msg.direction),
                 }
               : player
           ) || [],
@@ -89,7 +105,7 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
     }
   })
 
-  socket.on(EVENT.POSITION_UPDATE, (keyDown: KeyDown) => {
+  socket.on(EVENT.POSITION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
     // Client wants us to update the position
     const allowedKeyEvents =
       keyDown === 'ArrowUp' || keyDown === 'ArrowDown' || keyDown === 'ArrowRight' || keyDown === 'ArrowLeft'
@@ -97,8 +113,8 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
     if (allowedKeyEvents) {
       //  This happens outside the game loop...
       updateModel(model, {
-        type: 'PositionUpdate',
-        socketId: socket.id,
+        type: 'NewDirection',
+        playerId: playerId,
         keyDown,
       })
     }
@@ -120,7 +136,9 @@ function gameLoop() {
   let delta = (now - previous) / 1000
 
   // Update
-  // ...
+  model.players?.forEach((player) => {
+    updateModel(model, { type: 'NewPosition', playerId: player.id, direction: player.direction })
+  })
 
   // Then emit
   io.emit(EVENT.STATE_UPDATE, model.players)
@@ -128,6 +146,19 @@ function gameLoop() {
 
   previous = now
   tick++
+}
+
+function getNewPlayerPosition(position: PlayerPosition, direction: PlayerDirection) {
+  switch (direction) {
+    case 'Up':
+      return { ...position, y: position.y - playerSize }
+    case 'Down':
+      return { ...position, y: position.y + playerSize }
+    case 'Left':
+      return { ...position, x: position.x - playerSize }
+    case 'Right':
+      return { ...position, x: position.x + playerSize }
+  }
 }
 
 // Utills
@@ -146,16 +177,16 @@ const createPlayer = (id: string, color: string) => ({
   }) as PlayerDirection,
 })
 
-function getNewPlayerPosition(position: PlayerPosition, keyDown: KeyDown) {
+function getNewPlayerDirection(keyDown: KeyDown) {
   switch (keyDown) {
     case 'ArrowUp':
-      return { ...position, y: position.y - playerSize }
+      return 'Up'
     case 'ArrowDown':
-      return { ...position, y: position.y + playerSize }
+      return 'Down'
     case 'ArrowRight':
-      return { ...position, x: position.x + playerSize }
+      return 'Right'
     case 'ArrowLeft':
-      return { ...position, x: position.x - playerSize }
+      return 'Left'
   }
 }
 

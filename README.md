@@ -21,5 +21,10 @@ Or run them as separate processes
 - [x] Basic client setup
 - [x] Basic server setup
 - [ ] Implement actual Snake gameplay
+  - [x] Continues movement
+  - [ ] Make Snake stay in bound
+  - [ ] Eat fruit
+  - [ ] Gain length
+  - [ ] Snake self-collision
 - [ ] Make it possible to input custom Snake color
 - [ ] Snake multiplayer?
