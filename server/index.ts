@@ -1,49 +1,77 @@
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-
-export enum EVENT {
-  "POSITION_UPDATE" = "position_update",
-  "STATE_UPDATE" = "state_update",
-}
-
-export enum MSG {
-  "CONNECT" = "connect", // This keyword is socket io magic
-  "DISCONNECT" = "disconnect",
-  "INITIALIZE" = "initialize",
-}
+import { EVENT, MSG, Player, KeyDown, Model } from "./Interface";
 
 const httpServer = createServer();
 const io = new Server(httpServer);
 
-const stateUpdateInterval = 1000 / 60;
+const TICK_RATE = 20;
+
+let tick = 0;
+let previous = hrtimeMs();
+let tickLengthMs = 1000 / TICK_RATE;
+
 const playerSize = 10;
 const canvasSize = 500;
 
-// Model
-interface State {
-  stateChanged: boolean;
-  isEmittingUpdates: boolean;
-  players: Player[];
-}
+const defaultModel = (): Model => ({
+  state: "Loading",
+  players: [],
+});
 
-interface PlayerPosition {
-  x: number;
-  y: number;
-}
-
-interface Player {
-  id: string;
-  color: string;
-  position: PlayerPosition;
-}
-
-let state: State = {
-  stateChanged: false,
-  isEmittingUpdates: false,
+let model: Model = {
+  state: "Init",
   players: [],
 };
 
-type KeyDown = "ArrowUp" | "ArrowRight" | "ArrowDown" | "ArrowLeft";
+type Msg =
+  | { type: "Init"; socketId: string; player: Player }
+  | { type: "Playing" }
+  | { type: "Loading" }
+  | { type: "Disconnect"; socketId: string }
+  | { type: "PositionUpdate"; socketId: string; keyDown: KeyDown };
+
+function updateModel(prevModel: Model, msg: Msg) {
+  switch (msg.type) {
+    case "Init":
+      model = {
+        ...prevModel,
+        state: "Playing",
+        //  Only 1 player allowed, for now
+        players: [createPlayer(msg.socketId, msg.player.color)],
+      };
+      break;
+    case "Playing":
+      model = { ...prevModel };
+      break;
+    case "Loading":
+      model = { ...prevModel, ...defaultModel() };
+      break;
+    case "Disconnect":
+      model = {
+        ...prevModel,
+        state: "Loading",
+        players:
+          model.players?.filter((player) => player.id === msg.socketId) || [],
+      };
+      break;
+    case "PositionUpdate":
+      model = {
+        ...prevModel,
+        state: "Playing",
+        players:
+          model.players?.map((player) =>
+            player.id === msg.socketId
+              ? getNewPlayerPosition(player, msg.keyDown)
+              : player
+          ) || [],
+      };
+      break;
+    default:
+      model = { ...prevModel };
+      break;
+  }
+}
 
 // Server Logic
 io.sockets.on(MSG.CONNECT, (socket: Socket) => {
@@ -51,67 +79,64 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
 
   socket.on(MSG.DISCONNECT, () => {
     // Player dc:ed, remove player
-    updateState(state, {
-      stateChanged: true,
-      players: state.players.filter((player) => player.id === socket.id),
-    });
+    updateModel(model, { type: "Disconnect", socketId: socket.id });
   });
 
   socket.on(EVENT.POSITION_UPDATE, (keyDown: KeyDown) => {
-    // Client wants us to update the position
-    const allowedKeyEvents =
-      keyDown === "ArrowUp" ||
-      keyDown === "ArrowDown" ||
-      keyDown === "ArrowRight" ||
-      keyDown === "ArrowLeft";
+    if (model.state === "Playing") {
+      // Client wants us to update the position
+      const allowedKeyEvents =
+        keyDown === "ArrowUp" ||
+        keyDown === "ArrowDown" ||
+        keyDown === "ArrowRight" ||
+        keyDown === "ArrowLeft";
 
-    if (allowedKeyEvents) {
-      updateState(state, {
-        stateChanged: true,
-        players: state.players.map((player) =>
-          player.id === socket.id
-            ? getNewPlayerPosition(player, keyDown)
-            : player
-        ),
-      });
+      if (allowedKeyEvents) {
+        updateModel(model, {
+          type: "PositionUpdate",
+          socketId: socket.id,
+          keyDown,
+        });
+      }
     }
   });
 
   socket.on(MSG.INITIALIZE, (player: Player) => {
     // Client wants to start a new game
-    updateState(state, {
-      stateChanged: true,
-      //  Only 1 player allowed, for now
-      players: [createPlayer(socket.id, player.color)],
-    });
+    updateModel(model, { type: "Init", socketId: socket.id, player });
 
-    if (state.players.length === 1 && !state.isEmittingUpdates) {
-      emitState();
+    if (model.players?.length === 1 && model.state === "Playing") {
+      gameLoop();
+    } else {
+      updateModel(model, { type: "Loading" });
     }
   });
 });
 
-function emitState() {
-  updateState(state, { isEmittingUpdates: true });
-
-  // Only emit if state has changed
-  if (state.stateChanged) {
-    console.log("Emiting game update:", state.players);
-    io.emit(EVENT.STATE_UPDATE, state.players);
-    updateState(state, { stateChanged: false });
-  }
-
-  // Start game loop if we have players
-  if (state.players && state.players.length > 0) {
-    setTimeout(emitState, stateUpdateInterval);
-  } else {
-    // Stop game loop if there are no players left
-    updateState(state, { isEmittingUpdates: false });
-  }
+function hrtimeMs() {
+  let time = process.hrtime();
+  return time[0] * 1000 + time[1] / 1000000;
 }
 
-function updateState(prevState: State, newState: Object) {
-  state = { ...prevState, ...newState };
+function gameLoop() {
+  if (model.state === "Playing" && model.players && model.players.length > 0) {
+    setTimeout(gameLoop, tickLengthMs);
+  } else {
+    updateModel(model, { type: "Loading" });
+  }
+
+  let now = hrtimeMs();
+  let delta = (now - previous) / 1000;
+
+  // Update
+  // ...
+
+  // Then emit
+  io.emit(EVENT.STATE_UPDATE, model.players);
+  console.log(JSON.stringify({ delta, tick, model }));
+
+  previous = now;
+  tick++;
 }
 
 // Utills
