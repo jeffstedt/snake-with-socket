@@ -37,15 +37,11 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = {
         ...prevModel,
         state: "Playing",
-        //  Only 1 player allowed, for now
         players: [createPlayer(msg.socketId, msg.player.color)],
       };
       break;
     case "Playing":
-      model = { ...prevModel };
-      break;
-    case "Loading":
-      model = { ...prevModel, ...defaultModel() };
+      model = { ...prevModel, state: "Playing" };
       break;
     case "Disconnect":
       model = {
@@ -67,8 +63,11 @@ function updateModel(prevModel: Model, msg: Msg) {
           ) || [],
       };
       break;
+    case "Loading":
+      model = { ...prevModel, ...defaultModel() };
+      break;
     default:
-      model = { ...prevModel };
+      model = prevModel;
       break;
   }
 }
@@ -76,30 +75,6 @@ function updateModel(prevModel: Model, msg: Msg) {
 // Server Logic
 io.sockets.on(MSG.CONNECT, (socket: Socket) => {
   console.log("New connection established:", socket.id);
-
-  socket.on(MSG.DISCONNECT, () => {
-    // Player dc:ed, remove player
-    updateModel(model, { type: "Disconnect", socketId: socket.id });
-  });
-
-  socket.on(EVENT.POSITION_UPDATE, (keyDown: KeyDown) => {
-    if (model.state === "Playing") {
-      // Client wants us to update the position
-      const allowedKeyEvents =
-        keyDown === "ArrowUp" ||
-        keyDown === "ArrowDown" ||
-        keyDown === "ArrowRight" ||
-        keyDown === "ArrowLeft";
-
-      if (allowedKeyEvents) {
-        updateModel(model, {
-          type: "PositionUpdate",
-          socketId: socket.id,
-          keyDown,
-        });
-      }
-    }
-  });
 
   socket.on(MSG.INITIALIZE, (player: Player) => {
     // Client wants to start a new game
@@ -111,12 +86,28 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
       updateModel(model, { type: "Loading" });
     }
   });
-});
 
-function hrtimeMs() {
-  let time = process.hrtime();
-  return time[0] * 1000 + time[1] / 1000000;
-}
+  socket.on(EVENT.POSITION_UPDATE, (keyDown: KeyDown) => {
+    // Client wants us to update the position
+    const allowedKeyEvents =
+      keyDown === "ArrowUp" ||
+      keyDown === "ArrowDown" ||
+      keyDown === "ArrowRight" ||
+      keyDown === "ArrowLeft";
+
+    if (allowedKeyEvents) {
+      updateModel(model, {
+        type: "PositionUpdate",
+        socketId: socket.id,
+        keyDown,
+      });
+    }
+  });
+
+  socket.on(MSG.DISCONNECT, () => {
+    updateModel(model, { type: "Disconnect", socketId: socket.id });
+  });
+});
 
 function gameLoop() {
   if (model.state === "Playing" && model.players && model.players.length > 0) {
@@ -140,6 +131,12 @@ function gameLoop() {
 }
 
 // Utills
+
+function hrtimeMs() {
+  let time = process.hrtime();
+  return time[0] * 1000 + time[1] / 1000000;
+}
+
 const createPlayer = (id: string, color: string) => ({
   id,
   color,
