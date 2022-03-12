@@ -45,6 +45,9 @@ export interface Player {
   id: string;
   color: string;
   position: PlayerPosition;
+  direction: PlayerDirection;
 }
+
+export type PlayerDirection = "Up" | "Right" | "Left" | "Down";
 
 export type KeyDown = "ArrowUp" | "ArrowRight" | "ArrowDown" | "ArrowLeft";
