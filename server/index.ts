@@ -1,6 +1,13 @@
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
-import { EVENT, MSG, Player, KeyDown, Model } from "./Interface";
+import {
+  EVENT,
+  MSG,
+  Player,
+  KeyDown,
+  Model,
+  PlayerPosition,
+} from "./Interface";
 
 const httpServer = createServer();
 const io = new Server(httpServer);
@@ -58,7 +65,10 @@ function updateModel(prevModel: Model, msg: Msg) {
         players:
           model.players?.map((player) =>
             player.id === msg.socketId
-              ? getNewPlayerPosition(player, msg.keyDown)
+              ? {
+                  ...player,
+                  position: getNewPlayerPosition(player.position, msg.keyDown),
+                }
               : player
           ) || [],
       };
@@ -75,6 +85,7 @@ function updateModel(prevModel: Model, msg: Msg) {
 // Server Logic
 io.sockets.on(MSG.CONNECT, (socket: Socket) => {
   console.log("New connection established:", socket.id);
+  updateModel(model, { type: "Loading" });
 
   socket.on(MSG.INITIALIZE, (player: Player) => {
     // Client wants to start a new game
@@ -124,7 +135,7 @@ function gameLoop() {
 
   // Then emit
   io.emit(EVENT.STATE_UPDATE, model.players);
-  console.log(JSON.stringify({ delta, tick, model }));
+  console.log(JSON.stringify({ delta, tick, model }, null, 2));
 
   previous = now;
   tick++;
@@ -143,28 +154,16 @@ const createPlayer = (id: string, color: string) => ({
   position: { x: canvasSize / 2, y: canvasSize / 2 },
 });
 
-function getNewPlayerPosition(player: Player, keyDown: KeyDown) {
+function getNewPlayerPosition(position: PlayerPosition, keyDown: KeyDown) {
   switch (keyDown) {
     case "ArrowUp":
-      return {
-        ...player,
-        position: { ...player.position, y: player.position.y - playerSize },
-      };
+      return { ...position, y: position.y - playerSize };
     case "ArrowDown":
-      return {
-        ...player,
-        position: { ...player.position, y: player.position.y + playerSize },
-      };
+      return { ...position, y: position.y + playerSize };
     case "ArrowRight":
-      return {
-        ...player,
-        position: { ...player.position, x: player.position.x + playerSize },
-      };
+      return { ...position, x: position.x + playerSize };
     case "ArrowLeft":
-      return {
-        ...player,
-        position: { ...player.position, x: player.position.x - playerSize },
-      };
+      return { ...position, x: position.x - playerSize };
   }
 }
 
