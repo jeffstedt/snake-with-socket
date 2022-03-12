@@ -22,7 +22,7 @@ Or run them as separate processes
 - [x] Basic server setup
 - [ ] Implement actual Snake gameplay
   - [x] Continues movement
-  - [ ] Make Snake stay in bound
+  - [x] Make Snake stay in bound
   - [ ] Eat fruit
   - [ ] Gain length
   - [ ] Snake self-collision

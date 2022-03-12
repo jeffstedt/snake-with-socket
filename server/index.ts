@@ -112,11 +112,7 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
 
     if (allowedKeyEvents) {
       //  This happens outside the game loop, is it a problem?
-      updateModel(model, {
-        type: 'NewDirection',
-        playerId: playerId,
-        keyDown,
-      })
+      updateModel(model, { type: 'NewDirection', playerId: playerId, keyDown })
     }
   })
 
