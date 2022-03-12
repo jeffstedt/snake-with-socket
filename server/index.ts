@@ -151,13 +151,17 @@ function gameLoop() {
 function getNewPlayerPosition(position: PlayerPosition, direction: PlayerDirection) {
   switch (direction) {
     case 'Up':
-      return { ...position, y: position.y - playerSize }
+      return position.y <= 0 - playerSize
+        ? { ...position, y: canvasSize - playerSize }
+        : { ...position, y: position.y - playerSize }
     case 'Down':
-      return { ...position, y: position.y + playerSize }
+      return position.y >= canvasSize + playerSize ? { ...position, y: 0 } : { ...position, y: position.y + playerSize }
     case 'Left':
-      return { ...position, x: position.x - playerSize }
+      return position.x <= 0 - playerSize
+        ? { ...position, x: canvasSize - playerSize }
+        : { ...position, x: position.x - playerSize }
     case 'Right':
-      return { ...position, x: position.x + playerSize }
+      return position.x >= canvasSize + playerSize ? { ...position, x: 0 } : { ...position, x: position.x + playerSize }
   }
 }
 
