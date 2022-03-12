@@ -16,6 +16,7 @@ interface Game {
   stateChanged?: boolean
   isEmittingUpdates?: boolean
   players?: Player[]
+  fruit?: Fruit
 }
 
 export interface Loading extends Game {
@@ -36,16 +37,20 @@ export interface Error extends Game {
   state: 'Error'
 }
 
-export interface PlayerPosition {
+export interface Position {
   x: number
   y: number
+}
+
+export interface Fruit {
+  position: Position
 }
 
 export interface Player {
   id: string
   color: string
   size: number
-  position: PlayerPosition
+  position: Position
   direction: PlayerDirection
 }
 

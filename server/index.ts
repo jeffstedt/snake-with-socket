@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
-import { EVENT, MSG, Player, KeyDown, Model, PlayerPosition, PlayerDirection } from './Interface'
+import { EVENT, MSG, Player, KeyDown, Model, Position, PlayerDirection, Fruit } from './Interface'
 
 const httpServer = createServer()
 const io = new Server(httpServer)
@@ -30,7 +30,7 @@ type Msg =
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
   | { type: 'NewDirection'; playerId: string; keyDown: KeyDown }
-  | { type: 'NewPosition'; playerId: string; direction: PlayerDirection }
+  | { type: 'NewPosition'; player: Player; direction: PlayerDirection }
 
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
@@ -39,6 +39,7 @@ function updateModel(prevModel: Model, msg: Msg) {
         ...prevModel,
         state: 'Playing',
         players: [createPlayer(msg.socketId, msg.player.color)],
+        fruit: createFruit(),
       }
       break
     case 'Playing':
@@ -72,13 +73,14 @@ function updateModel(prevModel: Model, msg: Msg) {
         state: 'Playing',
         players:
           model.players?.map((player) =>
-            player.id === msg.playerId
+            player.id === msg.player.id
               ? {
                   ...player,
                   position: getNewPlayerPosition(player.position, msg.direction),
                 }
               : player
           ) || [],
+        fruit: checkFruit(msg.player, model.fruit),
       }
       break
     case 'Loading':
@@ -87,6 +89,14 @@ function updateModel(prevModel: Model, msg: Msg) {
     default:
       model = prevModel
       break
+  }
+}
+
+function checkFruit(player: Player, fruit?: Fruit) {
+  if (player.position.x === fruit?.position.x && player.position.y === fruit?.position.y) {
+    return createFruit()
+  } else {
+    return fruit
   }
 }
 
@@ -133,18 +143,18 @@ function gameLoop() {
 
   // Update
   model.players?.forEach((player) => {
-    updateModel(model, { type: 'NewPosition', playerId: player.id, direction: player.direction })
+    updateModel(model, { type: 'NewPosition', player: player, direction: player.direction })
   })
 
   // Then emit
-  io.emit(EVENT.STATE_UPDATE, model.players)
+  io.emit(EVENT.STATE_UPDATE, { players: model.players, fruit: model.fruit })
   console.log(JSON.stringify({ delta, tick, model }, null, 2))
 
   previous = now
   tick++
 }
 
-function accountForTeleportation(position: PlayerPosition) {
+function accountForTeleportation(position: Position) {
   if (position.y === 0 - playerSize) {
     return { ...position, y: canvasSize - playerSize }
   }
@@ -161,7 +171,7 @@ function accountForTeleportation(position: PlayerPosition) {
   return position
 }
 
-function getNewPlayerPosition(position: PlayerPosition, direction: PlayerDirection) {
+function getNewPlayerPosition(position: Position, direction: PlayerDirection) {
   switch (direction) {
     case 'Up':
       return accountForTeleportation({ ...position, y: position.y - playerSize })
@@ -189,6 +199,14 @@ const createPlayer = (id: string, color: string) => ({
   direction: ['Up', 'Right', 'Left', 'Down'].reduce((p, c, i, array) => {
     return array[Math.floor(Math.random() * Math.floor(array.length))]
   }) as PlayerDirection,
+})
+
+const randomNum = () => Math.floor(Math.random() * 20) * 25
+
+const createFruit = () => ({
+  color: '#FF0000',
+  size: playerSize,
+  position: { x: randomNum(), y: randomNum() },
 })
 
 function getNewPlayerDirection(key: KeyDown, direction: PlayerDirection) {

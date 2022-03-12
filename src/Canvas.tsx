@@ -1,23 +1,30 @@
 import { useRef, useEffect } from 'react'
 
-interface PlayerPosition {
+interface Position {
   x: number
   y: number
 }
 
-interface Player {
+export interface Player {
   id: string
   color: string
   size: number
-  position: PlayerPosition
+  position: Position
+}
+
+export interface Fruit {
+  color: string
+  size: number
+  position: Position
 }
 
 interface Props {
   [x: string]: any
   players: Player[]
+  fruit: Fruit | null
 }
 
-export default function Canvas({ players }: Props) {
+export default function Canvas({ players, fruit }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   function draw(context: CanvasRenderingContext2D) {
@@ -30,6 +37,12 @@ export default function Canvas({ players }: Props) {
       context.fillStyle = player.color
       context.fillRect(player.position.x, player.position.y, player.size, player.size)
     })
+
+    // Fraw fruit
+    if (fruit) {
+      context.fillStyle = fruit.color
+      context.fillRect(fruit.position.x, fruit.position.y, fruit.size, fruit.size)
+    }
   }
 
   useEffect(() => {
@@ -38,7 +51,7 @@ export default function Canvas({ players }: Props) {
     if (context == null) throw new Error('Could not get context')
 
     draw(context)
-  }, [players]) //Listen to players change
+  }, [players, fruit]) //Listen to players change
 
   return <canvas width={500} height={500} ref={canvasRef} />
 }

@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { EVENT, MSG, socket } from './Api'
 import Canvas from './Canvas'
+import {Player, Fruit} from "./Canvas"
 
 type Running = string
 type ServerStatus = 'Idle' | Running
 
 function App() {
   const [serverStatus, setServerStatus] = useState<ServerStatus>('Idle')
-  const [players, setPlayers] = useState(null)
+  const [players, setPlayers] = useState<Player[]>([])
+  const [fruit, setFruit] = useState<Fruit | null>(null)
 
   useEffect(() => {
     socket.on(MSG.CONNECT, () => {
@@ -30,14 +32,16 @@ function App() {
       })
 
       // Listen to game updates and save them in our state
-      socket.on(EVENT.STATE_UPDATE, (players) => {
+      socket.on(EVENT.STATE_UPDATE, ({players, fruit}) => {
         setPlayers(players)
+        setFruit(fruit)
       })
     })
 
     socket.on(MSG.DISCONNECT, () => {
       setServerStatus('Idle')
-      setPlayers(null)
+      setPlayers([])
+      setFruit(null)
     })
   }, [])
 
@@ -53,7 +57,7 @@ function App() {
                 Connected to server on <code>{serverStatus}</code>
               </p>
             </div>
-            {players ? <Canvas players={players} /> : 'Loading...'}
+            {players ? <Canvas players={players} fruit={fruit} /> : 'Loading...'}
           </div>
         )}
       </header>
