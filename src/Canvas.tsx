@@ -28,21 +28,32 @@ export default function Canvas({ players, fruit }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
   function draw(context: CanvasRenderingContext2D) {
+    context.fillStyle = '#000000'
+    context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     // Draw canvas
     context.fillStyle = '#000000'
     context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-    // Draw players
-    players.forEach((player) => {
-      context.fillStyle = player.color
-      context.fillRect(player.position.x, player.position.y, player.size, player.size)
-    })
+
 
     // Fraw fruit
     if (fruit) {
-      context.fillStyle = fruit.color
-      context.fillRect(fruit.position.x, fruit.position.y, fruit.size, fruit.size)
+      context.beginPath();
+      context.fillStyle = fruit.color;
+      context.arc(fruit.size/2 + fruit.position.x, fruit.position.y + fruit.size/2, fruit.size/2, 0, 2* Math.PI);
+      context.fill();
     }
+
+       // Draw players
+       players.forEach((player) => {
+        context.beginPath();
+        context.fillStyle = player.color;
+        context.arc(player.size/2 + player.position.x, player.position.y + player.size/2, player.size/2, 0, 2* Math.PI);
+        context.fill();
+      })
+
+
+
   }
 
   useEffect(() => {
@@ -53,5 +64,5 @@ export default function Canvas({ players, fruit }: Props) {
     draw(context)
   }, [players, fruit]) //Listen to players change
 
-  return <canvas width={500} height={500} ref={canvasRef} />
+  return <canvas width="500px" height="500px" ref={canvasRef} />
 }
