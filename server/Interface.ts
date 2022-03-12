@@ -44,6 +44,7 @@ export interface PlayerPosition {
 export interface Player {
   id: string
   color: string
+  size: number
   position: PlayerPosition
   direction: PlayerDirection
 }

@@ -11,7 +11,7 @@ let tick = 0
 let previous = hrtimeMs()
 let tickLengthMs = 1000 / TICK_RATE
 
-const playerSize = 10
+const playerSize = 25
 const canvasSize = 500
 
 const defaultModel = (): Model => ({
@@ -144,20 +144,33 @@ function gameLoop() {
   tick++
 }
 
+function accountForTeleportation(position: PlayerPosition) {
+  if (position.y === 0 - playerSize) {
+    return { ...position, y: canvasSize - playerSize }
+  }
+  if (position.y === canvasSize) {
+    return { ...position, y: 0 }
+  }
+  if (position.x === 0 - playerSize) {
+    return { ...position, x: canvasSize - playerSize }
+  }
+  if (position.x === canvasSize) {
+    return { ...position, x: 0 }
+  }
+
+  return position
+}
+
 function getNewPlayerPosition(position: PlayerPosition, direction: PlayerDirection) {
   switch (direction) {
     case 'Up':
-      return position.y <= 0 - playerSize
-        ? { ...position, y: canvasSize - playerSize }
-        : { ...position, y: position.y - playerSize }
+      return accountForTeleportation({ ...position, y: position.y - playerSize })
     case 'Down':
-      return position.y >= canvasSize + playerSize ? { ...position, y: 0 } : { ...position, y: position.y + playerSize }
+      return accountForTeleportation({ ...position, y: position.y + playerSize })
     case 'Left':
-      return position.x <= 0 - playerSize
-        ? { ...position, x: canvasSize - playerSize }
-        : { ...position, x: position.x - playerSize }
+      return accountForTeleportation({ ...position, x: position.x - playerSize })
     case 'Right':
-      return position.x >= canvasSize + playerSize ? { ...position, x: 0 } : { ...position, x: position.x + playerSize }
+      return accountForTeleportation({ ...position, x: position.x + playerSize })
   }
 }
 
@@ -171,6 +184,7 @@ function hrtimeMs() {
 const createPlayer = (id: string, color: string) => ({
   id,
   color,
+  size: playerSize,
   position: { x: canvasSize / 2, y: canvasSize / 2 },
   direction: ['Up', 'Right', 'Left', 'Down'].reduce((p, c, i, array) => {
     return array[Math.floor(Math.random() * Math.floor(array.length))]
