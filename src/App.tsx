@@ -31,6 +31,12 @@ function App() {
         setPlayers(players);
       });
     });
+
+    socket.on(MSG.DISCONNECT, () => {
+      setServerStatus("Idle")
+      setPlayers(null)
+    });
+
   }, []);
 
   return (
