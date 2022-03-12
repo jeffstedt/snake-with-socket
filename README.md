@@ -23,7 +23,7 @@ Or run them as separate processes
 - [ ] Implement actual Snake gameplay
   - [x] Continues movement
   - [x] Make Snake stay in bound
-  - [ ] Eat fruit
+  - [x] Eat fruit
   - [ ] Gain length
   - [ ] Snake self-collision
 - [ ] Make it possible to input custom Snake color
