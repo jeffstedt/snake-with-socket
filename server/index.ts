@@ -5,7 +5,7 @@ import { EVENT, MSG, Player, KeyDown, Model, PlayerPosition, PlayerDirection } f
 const httpServer = createServer()
 const io = new Server(httpServer)
 
-const TICK_RATE = 20
+const TICK_RATE = 10
 
 let tick = 0
 let previous = hrtimeMs()
