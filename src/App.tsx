@@ -23,7 +23,7 @@ function App() {
 
       // Listen and emit keydown events
       window.addEventListener('keydown', (event) => {
-        socket.emit(EVENT.POSITION_UPDATE, {
+        socket.emit(EVENT.DIRECTION_UPDATE, {
           playerId: socket.id,
           keyDown: event.key,
         })

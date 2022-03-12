@@ -1,53 +1,53 @@
 export enum EVENT {
-  "POSITION_UPDATE" = "position_update",
-  "STATE_UPDATE" = "state_update",
+  'DIRECTION_UPDATE' = 'direction_update',
+  'STATE_UPDATE' = 'state_update',
 }
 
 export enum MSG {
-  "CONNECT" = "connect", // This keyword is socket io magic
-  "DISCONNECT" = "disconnect",
-  "INITIALIZE" = "initialize",
+  'CONNECT' = 'connect', // This keyword is socket io magic
+  'DISCONNECT' = 'disconnect',
+  'INITIALIZE' = 'initialize',
 }
 
 // Model
-export type Model = Loading | Init | Select | Playing | Error;
+export type Model = Loading | Init | Select | Playing | Error
 
 interface Game {
-  stateChanged?: boolean;
-  isEmittingUpdates?: boolean;
-  players?: Player[];
+  stateChanged?: boolean
+  isEmittingUpdates?: boolean
+  players?: Player[]
 }
 
 export interface Loading extends Game {
-  state: "Loading";
+  state: 'Loading'
 }
 
 export interface Init extends Game {
-  state: "Init";
+  state: 'Init'
 }
 
 export interface Playing extends Game {
-  state: "Playing";
+  state: 'Playing'
 }
 export interface Select extends Game {
-  state: "Select";
+  state: 'Select'
 }
 export interface Error extends Game {
-  state: "Error";
+  state: 'Error'
 }
 
 export interface PlayerPosition {
-  x: number;
-  y: number;
+  x: number
+  y: number
 }
 
 export interface Player {
-  id: string;
-  color: string;
-  position: PlayerPosition;
-  direction: PlayerDirection;
+  id: string
+  color: string
+  position: PlayerPosition
+  direction: PlayerDirection
 }
 
-export type PlayerDirection = "Up" | "Right" | "Left" | "Down";
+export type PlayerDirection = 'Up' | 'Right' | 'Left' | 'Down'
 
-export type KeyDown = "ArrowUp" | "ArrowRight" | "ArrowDown" | "ArrowLeft";
+export type KeyDown = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'

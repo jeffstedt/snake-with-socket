@@ -105,13 +105,13 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
     }
   })
 
-  socket.on(EVENT.POSITION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
-    // Client wants us to update the position
+  socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
+    // Client wants to update the position
     const allowedKeyEvents =
       keyDown === 'ArrowUp' || keyDown === 'ArrowDown' || keyDown === 'ArrowRight' || keyDown === 'ArrowLeft'
 
     if (allowedKeyEvents) {
-      //  This happens outside the game loop...
+      //  This happens outside the game loop, is it a problem?
       updateModel(model, {
         type: 'NewDirection',
         playerId: playerId,
