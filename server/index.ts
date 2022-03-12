@@ -60,7 +60,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.playerId
               ? {
                   ...player,
-                  direction: getNewPlayerDirection(msg.keyDown),
+                  direction: getNewPlayerDirection(msg.keyDown, player.direction),
                 }
               : player
           ) || [],
@@ -181,16 +181,17 @@ const createPlayer = (id: string, color: string) => ({
   }) as PlayerDirection,
 })
 
-function getNewPlayerDirection(keyDown: KeyDown) {
-  switch (keyDown) {
-    case 'ArrowUp':
-      return 'Up'
-    case 'ArrowDown':
-      return 'Down'
-    case 'ArrowRight':
-      return 'Right'
-    case 'ArrowLeft':
-      return 'Left'
+function getNewPlayerDirection(key: KeyDown, direction: PlayerDirection) {
+  if (key === 'ArrowUp' && direction !== 'Down') {
+    return 'Up'
+  } else if (key === 'ArrowDown' && direction !== 'Up') {
+    return 'Down'
+  } else if (key === 'ArrowRight' && direction !== 'Left') {
+    return 'Right'
+  } else if (key === 'ArrowLeft' && direction !== 'Right') {
+    return 'Left'
+  } else {
+    return direction
   }
 }
 
