@@ -1,4 +1,5 @@
 import { createServer } from 'http'
+import { Children } from 'react'
 import { Server, Socket } from 'socket.io'
 import { EVENT, MSG, Player, KeyDown, Model, Position, PlayerDirection, Fruit } from './Interface'
 
@@ -32,6 +33,7 @@ type Msg =
   | { type: 'NewDirection'; playerId: string; keyDown: KeyDown }
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'UpdateFruit'; player: Player }
+  | { type: 'UpdatePlayerLength'; player: Player }
   | { type: 'AddPoint'; player: Player }
 
 function updateModel(prevModel: Model, msg: Msg) {
@@ -78,7 +80,8 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  position: [updatePlayerPosition(getPlayerHead(player.position), player.direction)],
+                  prevPosition: getPlayerHead(player.position),
+                  position: [updatePlayerPosition(player, player.direction)],
                   length: updatePoint(player, model.fruit),
                 }
               : player
@@ -90,6 +93,21 @@ function updateModel(prevModel: Model, msg: Msg) {
         ...prevModel,
         state: 'Playing',
         fruit: updateFruit(msg.player, model.fruit),
+      }
+      break
+    case 'UpdatePlayerLength':
+      model = {
+        ...prevModel,
+        state: 'Playing',
+        players:
+          model.players?.map((player) =>
+            player.id === msg.player.id
+              ? {
+                  ...player,
+                  position: [addFakeFollower(player), ...player.position],
+                }
+              : player
+          ) || [],
       }
       break
     case 'Loading':
@@ -148,6 +166,7 @@ function gameLoop() {
       const player = model.players[index]
       updateModel(model, { type: 'UpdatePlayer', player: player })
       updateModel(model, { type: 'UpdateFruit', player: player })
+      updateModel(model, { type: 'UpdatePlayerLength', player: player })
     }
 
   // Then emit
@@ -183,17 +202,24 @@ function accountForTeleportation(position: Position) {
   if (position.y === canvasSize) {
     return { ...position, y: 0 }
   }
-  if (position.x === 0 - playerSize) {
+  if (position.x <= 0 - playerSize) {
     return { ...position, x: canvasSize - playerSize }
   }
-  if (position.x === canvasSize) {
+  if (position.x >= canvasSize) {
     return { ...position, x: 0 }
   }
 
   return position
 }
 
-function updatePlayerPosition(position: Position, direction: PlayerDirection) {
+function addFakeFollower(player: Player) {
+  const position = player.prevPosition
+  return { x: position.x, y: position.y }
+}
+
+function updatePlayerPosition(player: Player, direction: PlayerDirection): Position {
+  const position = getPlayerHead(player.position)
+
   switch (direction) {
     case 'Up':
       return accountForTeleportation({ ...position, y: position.y - playerSize })
@@ -226,6 +252,7 @@ const createPlayer = (id: string, color: string) => ({
   color,
   size: playerSize,
   length: 1,
+  prevPosition: { x: canvasSize / 2, y: canvasSize / 2 },
   position: [{ x: canvasSize / 2, y: canvasSize / 2 }],
   direction: ['Up', 'Right', 'Left', 'Down'].reduce((p, c, i, array) => {
     return array[Math.floor(Math.random() * Math.floor(array.length))]
