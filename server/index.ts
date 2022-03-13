@@ -30,7 +30,7 @@ type Msg =
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
   | { type: 'NewDirection'; playerId: string; keyDown: KeyDown }
-  | { type: 'UpdateFruitAndPlayer'; player: Player; direction: PlayerDirection }
+  | { type: 'UpdatePlayerAndFruit'; player: Player; direction: PlayerDirection }
   | { type: 'AddPoint'; player: Player }
 
 function updateModel(prevModel: Model, msg: Msg) {
@@ -68,7 +68,7 @@ function updateModel(prevModel: Model, msg: Msg) {
           ) || [],
       }
       break
-    case 'UpdateFruitAndPlayer':
+    case 'UpdatePlayerAndFruit':
       model = {
         ...prevModel,
         state: 'Playing',
@@ -139,7 +139,7 @@ function gameLoop() {
   if (model.players)
     for (let index = 0; index < model.players.length; index++) {
       const player = model.players[index]
-      updateModel(model, { type: 'UpdateFruitAndPlayer', player: player, direction: player.direction })
+      updateModel(model, { type: 'UpdatePlayerAndFruit', player: player, direction: player.direction })
     }
 
   // Then emit
