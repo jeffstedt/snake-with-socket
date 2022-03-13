@@ -30,7 +30,8 @@ type Msg =
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
   | { type: 'NewDirection'; playerId: string; keyDown: KeyDown }
-  | { type: 'NewPosition'; player: Player; direction: PlayerDirection }
+  | { type: 'UpdateFruitAndPlayer'; player: Player; direction: PlayerDirection }
+  | { type: 'AddPoint'; player: Player }
 
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
@@ -67,7 +68,7 @@ function updateModel(prevModel: Model, msg: Msg) {
           ) || [],
       }
       break
-    case 'NewPosition':
+    case 'UpdateFruitAndPlayer':
       model = {
         ...prevModel,
         state: 'Playing',
@@ -76,11 +77,12 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  position: [getNewPlayerPosition(getPlayerHead(player.position), msg.direction)],
+                  position: [getPlayerPosition(getPlayerHead(player.position), msg.direction)],
+                  length: getPoint(player, model.fruit),
                 }
               : player
           ) || [],
-        fruit: checkFruit(msg.player, model.fruit),
+        fruit: getFruit(msg.player, model.fruit),
       }
       break
     case 'Loading':
@@ -92,9 +94,22 @@ function updateModel(prevModel: Model, msg: Msg) {
   }
 }
 
-function checkFruit(player: Player, fruit?: Fruit) {
+function playerIsFruitPosition(playerPosition: Position, fruitPosition?: Position) {
+  return playerPosition.x === fruitPosition?.x && playerPosition?.y === fruitPosition.y
+}
+
+function getPoint(player: Player, fruit?: Fruit) {
   const playerPosition = getPlayerHead(player.position)
-  if (playerPosition.x === fruit?.position.x && playerPosition.y === fruit?.position.y) {
+  if (playerIsFruitPosition(playerPosition, fruit?.position)) {
+    return player.length + 1
+  } else {
+    return player.length
+  }
+}
+
+function getFruit(player: Player, fruit?: Fruit) {
+  const playerPosition = getPlayerHead(player.position)
+  if (playerIsFruitPosition(playerPosition, fruit?.position)) {
     return createFruit()
   } else {
     return fruit
@@ -143,9 +158,11 @@ function gameLoop() {
   let delta = (now - previous) / 1000
 
   // Update
-  model.players?.forEach((player) => {
-    updateModel(model, { type: 'NewPosition', player: player, direction: player.direction })
-  })
+  if (model.players)
+    for (let index = 0; index < model.players.length; index++) {
+      const player = model.players[index]
+      updateModel(model, { type: 'UpdateFruitAndPlayer', player: player, direction: player.direction })
+    }
 
   // Then emit
   io.emit(EVENT.STATE_UPDATE, { players: model.players, fruit: model.fruit })
@@ -172,7 +189,7 @@ function accountForTeleportation(position: Position) {
   return position
 }
 
-function getNewPlayerPosition(position: Position, direction: PlayerDirection) {
+function getPlayerPosition(position: Position, direction: PlayerDirection) {
   switch (direction) {
     case 'Up':
       return accountForTeleportation({ ...position, y: position.y - playerSize })
@@ -200,6 +217,7 @@ const createPlayer = (id: string, color: string) => ({
   id,
   color,
   size: playerSize,
+  length: 1,
   position: [{ x: canvasSize / 2, y: canvasSize / 2 }],
   direction: ['Up', 'Right', 'Left', 'Down'].reduce((p, c, i, array) => {
     return array[Math.floor(Math.random() * Math.floor(array.length))]

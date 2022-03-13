@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
+import { text } from 'stream/consumers'
 import { EVENT, MSG, socket } from './Api'
 import Canvas from './Canvas'
-import {Player, Fruit} from "./Canvas"
+import { Player, Fruit } from './Canvas'
 
 type Running = string
 type ServerStatus = 'Idle' | Running
@@ -32,7 +33,7 @@ function App() {
       })
 
       // Listen to game updates and save them in our state
-      socket.on(EVENT.STATE_UPDATE, ({players, fruit}) => {
+      socket.on(EVENT.STATE_UPDATE, ({ players, fruit }) => {
         setPlayers(players)
         setFruit(fruit)
       })
@@ -53,8 +54,16 @@ function App() {
         ) : (
           <div>
             <div>
+              Players active:
+              <div>
+                {players.map((player) => (
+                  <ul key={player.id} style={{textAlign: "left"}}>
+                    <li>ID: {player.id}{player.id === serverStatus && " (You)"}</li>
+                    <li>Points: {player.length}</li>
+                  </ul>
+                ))}
+              </div>
               <p>
-                Connected to server on <code>{serverStatus}</code>
               </p>
             </div>
             {players ? <Canvas players={players} fruit={fruit} /> : 'Loading...'}
