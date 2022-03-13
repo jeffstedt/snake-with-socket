@@ -30,7 +30,7 @@ type Msg =
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
   | { type: 'NewDirection'; playerId: string; keyDown: KeyDown }
-  | { type: 'UpdatePlayer'; player: Player; direction: PlayerDirection }
+  | { type: 'UpdatePlayer'; player: Player }
   | { type: 'UpdateFruit'; player: Player }
   | { type: 'AddPoint'; player: Player }
 
@@ -78,7 +78,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  position: [updatePlayerPosition(getPlayerHead(player.position), msg.direction)],
+                  position: [updatePlayerPosition(getPlayerHead(player.position), player.direction)],
                   length: updatePoint(player, model.fruit),
                 }
               : player
@@ -146,7 +146,7 @@ function gameLoop() {
   if (model.players)
     for (let index = 0; index < model.players.length; index++) {
       const player = model.players[index]
-      updateModel(model, { type: 'UpdatePlayer', player: player, direction: player.direction })
+      updateModel(model, { type: 'UpdatePlayer', player: player })
       updateModel(model, { type: 'UpdateFruit', player: player })
     }
 
