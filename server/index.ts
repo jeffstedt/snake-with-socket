@@ -80,7 +80,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  prevPosition: getPlayerHead(player.position),
+                  prevPosition: getPlayerHead(player.position), // Should be more dynamic..
                   position: [updatePlayerPosition(player, player.direction)],
                   length: updatePoint(player, model.fruit),
                 }
@@ -104,7 +104,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  position: [...addFakeFollower(player), ...player.position],
+                  position: [...player.position, ...addFakeFollower(player)],
                 }
               : player
           ) || [],
@@ -243,6 +243,10 @@ function playerIsFruitPosition(playerPosition: Position, fruitPosition?: Positio
 }
 
 function getPlayerHead(position: Position[]) {
+  return position[0]
+}
+
+function getPlayerTail(position: Position[]) {
   return position[position.length - 1]
 }
 
