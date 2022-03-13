@@ -104,7 +104,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  position: [addFakeFollower(player), ...player.position],
+                  position: [...addFakeFollower(player), ...player.position],
                 }
               : player
           ) || [],
@@ -214,7 +214,11 @@ function accountForTeleportation(position: Position) {
 
 function addFakeFollower(player: Player) {
   const position = player.prevPosition
-  return { x: position.x, y: position.y }
+  let chidlren = []
+  for (let index = 0; index < player.length; index++) {
+    chidlren.push({ x: position.x, y: position.y })
+  }
+  return chidlren
 }
 
 function updatePlayerPosition(player: Player, direction: PlayerDirection): Position {
