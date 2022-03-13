@@ -34,7 +34,7 @@ export default function Canvas({ players, fruit }: Props) {
 
     for (let index = 0; index <= context.canvas.width; index += 25) {
       context.moveTo(0.5 + index, 0)
-      context.lineTo(0.5 + index + 0, context.canvas.height)
+      context.lineTo(0.5 + index, context.canvas.height)
     }
 
     for (let index = 0; index <= context.canvas.height; index += 25) {
@@ -55,8 +55,9 @@ export default function Canvas({ players, fruit }: Props) {
 
     // Draw players
     for (let index = 0; index < players.length; index++) {
-      context.fillStyle = players[index].color
-      context.fillRect(players[index].position.x, players[index].position.y, players[index].size, players[index].size)
+      const player = players[index]
+      context.fillStyle = player.color
+      context.fillRect(player.position.x, player.position.y, player.size, player.size)
     }
   }
 
