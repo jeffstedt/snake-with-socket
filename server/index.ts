@@ -62,7 +62,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.playerId
               ? {
                   ...player,
-                  direction: getNewPlayerDirection(msg.keyDown, player.direction),
+                  direction: updatePlayerDirection(msg.keyDown, player.direction),
                 }
               : player
           ) || [],
@@ -77,12 +77,12 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  position: [getPlayerPosition(getPlayerHead(player.position), msg.direction)],
-                  length: getPoint(player, model.fruit),
+                  position: [updatePlayerPosition(getPlayerHead(player.position), msg.direction)],
+                  length: updatePoint(player, model.fruit),
                 }
               : player
           ) || [],
-        fruit: getFruit(msg.player, model.fruit),
+        fruit: updateFruit(msg.player, model.fruit),
       }
       break
     case 'Loading':
@@ -91,28 +91,6 @@ function updateModel(prevModel: Model, msg: Msg) {
     default:
       model = prevModel
       break
-  }
-}
-
-function playerIsFruitPosition(playerPosition: Position, fruitPosition?: Position) {
-  return playerPosition.x === fruitPosition?.x && playerPosition?.y === fruitPosition.y
-}
-
-function getPoint(player: Player, fruit?: Fruit) {
-  const playerPosition = getPlayerHead(player.position)
-  if (playerIsFruitPosition(playerPosition, fruit?.position)) {
-    return player.length + 1
-  } else {
-    return player.length
-  }
-}
-
-function getFruit(player: Player, fruit?: Fruit) {
-  const playerPosition = getPlayerHead(player.position)
-  if (playerIsFruitPosition(playerPosition, fruit?.position)) {
-    return createFruit()
-  } else {
-    return fruit
   }
 }
 
@@ -172,6 +150,24 @@ function gameLoop() {
   tick++
 }
 
+function updatePoint(player: Player, fruit?: Fruit) {
+  const playerPosition = getPlayerHead(player.position)
+  if (playerIsFruitPosition(playerPosition, fruit?.position)) {
+    return player.length + 1
+  } else {
+    return player.length
+  }
+}
+
+function updateFruit(player: Player, fruit?: Fruit) {
+  const playerPosition = getPlayerHead(player.position)
+  if (playerIsFruitPosition(playerPosition, fruit?.position)) {
+    return createFruit()
+  } else {
+    return fruit
+  }
+}
+
 function accountForTeleportation(position: Position) {
   if (position.y === 0 - playerSize) {
     return { ...position, y: canvasSize - playerSize }
@@ -189,7 +185,7 @@ function accountForTeleportation(position: Position) {
   return position
 }
 
-function getPlayerPosition(position: Position, direction: PlayerDirection) {
+function updatePlayerPosition(position: Position, direction: PlayerDirection) {
   switch (direction) {
     case 'Up':
       return accountForTeleportation({ ...position, y: position.y - playerSize })
@@ -203,6 +199,10 @@ function getPlayerPosition(position: Position, direction: PlayerDirection) {
 }
 
 // Utills
+
+function playerIsFruitPosition(playerPosition: Position, fruitPosition?: Position) {
+  return playerPosition.x === fruitPosition?.x && playerPosition?.y === fruitPosition.y
+}
 
 function getPlayerHead(position: Position[]) {
   return position[position.length - 1]
@@ -232,7 +232,7 @@ const createFruit = () => ({
   position: { x: randomNum(), y: randomNum() },
 })
 
-function getNewPlayerDirection(key: KeyDown, direction: PlayerDirection) {
+function updatePlayerDirection(key: KeyDown, direction: PlayerDirection) {
   if (key === 'ArrowUp' && direction !== 'Down') {
     return 'Up'
   } else if (key === 'ArrowDown' && direction !== 'Up') {
