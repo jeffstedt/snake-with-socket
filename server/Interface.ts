@@ -50,7 +50,7 @@ export interface Player {
   id: string
   color: string
   size: number
-  position: Position
+  position: Position[]
   direction: PlayerDirection
 }
 

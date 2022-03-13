@@ -1,5 +1,6 @@
 import { useRef, useEffect } from 'react'
 
+type Context = CanvasRenderingContext2D
 interface Position {
   x: number
   y: number
@@ -9,7 +10,7 @@ export interface Player {
   id: string
   color: string
   size: number
-  position: Position
+  position: Position[]
 }
 
 export interface Fruit {
@@ -27,7 +28,15 @@ interface Props {
 export default function Canvas({ players, fruit }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  function draw(context: CanvasRenderingContext2D) {
+  function drawSnake(context: Context, player: Player) {
+    for (let index = 0; index < player.position.length; index++) {
+      const cell = player.position[index]
+      context.fillStyle = player.color
+      context.fillRect(cell.x, cell.y, player.size, player.size)
+    }
+  }
+
+  function draw(context: Context) {
     // Draw play board
     context.fillStyle = '#1a1a1c'
     context.fillRect(0, 0, context.canvas.width, context.canvas.height)
@@ -55,9 +64,7 @@ export default function Canvas({ players, fruit }: Props) {
 
     // Draw players
     for (let index = 0; index < players.length; index++) {
-      const player = players[index]
-      context.fillStyle = player.color
-      context.fillRect(player.position.x, player.position.y, player.size, player.size)
+      drawSnake(context, players[index])
     }
   }
 

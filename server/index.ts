@@ -76,7 +76,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  position: getNewPlayerPosition(player.position, msg.direction),
+                  position: [getNewPlayerPosition(getPlayerHead(player.position), msg.direction)],
                 }
               : player
           ) || [],
@@ -93,7 +93,8 @@ function updateModel(prevModel: Model, msg: Msg) {
 }
 
 function checkFruit(player: Player, fruit?: Fruit) {
-  if (player.position.x === fruit?.position.x && player.position.y === fruit?.position.y) {
+  const playerPosition = getPlayerHead(player.position)
+  if (playerPosition.x === fruit?.position.x && playerPosition.y === fruit?.position.y) {
     return createFruit()
   } else {
     return fruit
@@ -186,6 +187,10 @@ function getNewPlayerPosition(position: Position, direction: PlayerDirection) {
 
 // Utills
 
+function getPlayerHead(position: Position[]) {
+  return position[position.length - 1]
+}
+
 function hrtimeMs() {
   let time = process.hrtime()
   return time[0] * 1000 + time[1] / 1000000
@@ -195,7 +200,7 @@ const createPlayer = (id: string, color: string) => ({
   id,
   color,
   size: playerSize,
-  position: { x: canvasSize / 2, y: canvasSize / 2 },
+  position: [{ x: canvasSize / 2, y: canvasSize / 2 }],
   direction: ['Up', 'Right', 'Left', 'Down'].reduce((p, c, i, array) => {
     return array[Math.floor(Math.random() * Math.floor(array.length))]
   }) as PlayerDirection,
