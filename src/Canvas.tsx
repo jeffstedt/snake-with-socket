@@ -1,31 +1,7 @@
 import { useRef, useEffect } from 'react'
+import { Player, Fruit, Settings } from './Api'
 
 type Context = CanvasRenderingContext2D
-interface Position {
-  x: number
-  y: number
-}
-
-export interface Player {
-  id: string
-  color: string
-  size: number
-  length: number
-  position: Position[]
-}
-
-export interface Fruit {
-  color: string
-  size: number
-  position: Position
-}
-
-export type ServerState = "Loading" | "Init" | "Select" | "Playing" | "Error"
-export interface Settings {
-  state: ServerState
-  cellSize: number
-}
-
 interface Props {
   [x: string]: any
   players: Player[]
@@ -83,7 +59,7 @@ export default function Canvas({ players, fruit, settings }: Props) {
     if (context == null) throw new Error('Could not get context')
 
     draw(context)
-  }, [players, fruit]) //Listen to players change
+  }, [players, fruit]) // Draw on incoming emited changes
 
-  return <canvas width="500px" height="500px" ref={canvasRef} />
+  return <canvas width={`${settings.canvasSize}px`} height={`${settings.canvasSize}px`} ref={canvasRef} />
 }

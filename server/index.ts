@@ -1,5 +1,4 @@
 import { createServer } from 'http'
-import { Children } from 'react'
 import { Server, Socket } from 'socket.io'
 import { EVENT, MSG, Player, KeyDown, Model, Position, PlayerDirection, Fruit } from './Interface'
 
@@ -54,7 +53,7 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = {
         ...prevModel,
         state: 'Loading',
-        players: model.players?.filter((player) => player.id === msg.socketId) || [],
+        players: model.players?.filter((player) => player.id !== msg.socketId) || [],
       }
       break
     case 'NewDirection':
@@ -128,6 +127,9 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
     // Client wants to start a new game
     updateModel(model, { type: 'Init', socketId: socket.id, player })
 
+    // Before starting game, give client game settings
+    io.emit(MSG.START_UP, { state: model.state, settings: { canvasSize, cellSize } })
+
     if (model.players?.length === 1 && model.state === 'Playing') {
       gameLoop()
     } else {
@@ -171,12 +173,7 @@ function gameLoop() {
     }
 
   // Then emit
-  io.emit(EVENT.STATE_UPDATE, {
-    state: model.state,
-    players: model.players,
-    fruit: model.fruit,
-    settings: { cellSize },
-  })
+  io.emit(EVENT.STATE_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
   console.log(JSON.stringify({ delta, tick, model }, null, 2))
 
   previous = now

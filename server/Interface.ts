@@ -7,14 +7,17 @@ export enum MSG {
   'CONNECT' = 'connect', // This keyword is socket io magic
   'DISCONNECT' = 'disconnect',
   'INITIALIZE' = 'initialize',
+  'START_UP' = 'start_up',
 }
 
 // Model
 export type Model = Loading | Init | Select | Playing | Error
 
+export type PlayerDirection = 'Up' | 'Right' | 'Left' | 'Down'
+
+export type KeyDown = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
+
 interface Game {
-  stateChanged?: boolean
-  isEmittingUpdates?: boolean
   players?: Player[]
   fruit?: Fruit
 }
@@ -30,9 +33,11 @@ export interface Init extends Game {
 export interface Playing extends Game {
   state: 'Playing'
 }
+
 export interface Select extends Game {
   state: 'Select'
 }
+
 export interface Error extends Game {
   state: 'Error'
 }
@@ -55,7 +60,3 @@ export interface Player {
   position: Position[]
   direction: PlayerDirection
 }
-
-export type PlayerDirection = 'Up' | 'Right' | 'Left' | 'Down'
-
-export type KeyDown = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'

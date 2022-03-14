@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react'
-import { EVENT, MSG, socket } from './Api'
-import Canvas, { ServerState, Player, Fruit, Settings } from './Canvas'
-
+import { socket, EVENT, MSG, ServerState, Player, Fruit, Settings } from './Api'
+import Canvas from './Canvas'
 
 type ServerStatus = {
-  state: ServerState | "Disconnected"
+  state: ServerState | 'Disconnected'
   id: string | null
 }
 
 function App() {
-  const [serverStatus, setServerStatus] = useState<ServerStatus>({state: "Disconnected", id: null })
+  const [serverStatus, setServerStatus] = useState<ServerStatus>({ state: 'Disconnected', id: null })
   const [players, setPlayers] = useState<Player[]>([])
   const [fruit, setFruit] = useState<Fruit | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
 
   useEffect(() => {
     socket.on(MSG.CONNECT, () => {
-      setServerStatus({state: "Loading", id: socket.id})
+      setServerStatus({ state: 'Loading', id: socket.id })
 
       // Try to start the game
       socket.emit(MSG.INITIALIZE, {
@@ -26,27 +25,34 @@ function App() {
         position: { x: 250, y: 250 },
       })
 
-      // Listen and emit keydown events
-      window.addEventListener('keydown', (event) => {
-        socket.emit(EVENT.DIRECTION_UPDATE, {
-          playerId: socket.id,
-          keyDown: event.key,
-        })
+      // We have handshake, retrieve game settings
+      socket.on(MSG.START_UP, ({ state, settings }) => {
+        setServerStatus({ state: state, id: socket.id })
+        setSettings(settings)
       })
 
       // Listen to game updates and save them in our state
-      socket.on(EVENT.STATE_UPDATE, ({ state, players, fruit, settings }) => {
-        setServerStatus({state: state, id: socket.id})
+      socket.on(EVENT.STATE_UPDATE, ({ state, players, fruit }) => {
+        setServerStatus({ state: state, id: socket.id })
         setPlayers(players)
         setFruit(fruit)
-        setSettings(settings)
       })
     })
 
+    // If we lose connection with server - reset app
     socket.on(MSG.DISCONNECT, () => {
-      setServerStatus({state: "Disconnected", id: null})
+      setServerStatus({ state: 'Disconnected', id: null })
       setPlayers([])
       setFruit(null)
+      setSettings(null)
+    })
+
+    // Listen and emit keydown events
+    window.addEventListener('keydown', (event) => {
+      socket.emit(EVENT.DIRECTION_UPDATE, {
+        playerId: socket.id,
+        keyDown: event.key,
+      })
     })
   }, [])
 
@@ -55,11 +61,11 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        {serverStatus.state === 'Loading' ? (
-          'Waiting on server...'
-        ): serverStatus.state === 'Disconnected' ? (
+        {serverStatus.state === 'Loading' || serverStatus.state === 'Init' ? (
+          'Loading...'
+        ) : serverStatus.state === 'Disconnected' ? (
           'Disconnected from server'
-        ) : (
+        ) : applicationIsReady && serverStatus.state === 'Playing' ? (
           <div>
             <div>
               Players active:
@@ -76,12 +82,10 @@ function App() {
               </div>
               <p></p>
             </div>
-            {applicationIsReady && serverStatus.state === 'Playing' ? (
-              <Canvas players={players} fruit={fruit} settings={settings} />
-            ) : (
-              'Loading...'
-            )}
+            <Canvas players={players} fruit={fruit} settings={settings} />
           </div>
+        ) : (
+          `Error: Unexpected state ${serverStatus.state}`
         )}
       </header>
     </div>
