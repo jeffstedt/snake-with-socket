@@ -12,8 +12,9 @@ let tick = 0
 let previous = hrtimeMs()
 let tickLengthMs = 1000 / TICK_RATE
 
-const playerSize = 25
 const canvasSize = 500
+const cellSize = 25
+const playerSize = cellSize
 
 const defaultModel = (): Model => ({
   state: 'Loading',
@@ -170,7 +171,12 @@ function gameLoop() {
     }
 
   // Then emit
-  io.emit(EVENT.STATE_UPDATE, { players: model.players, fruit: model.fruit })
+  io.emit(EVENT.STATE_UPDATE, {
+    state: model.state,
+    players: model.players,
+    fruit: model.fruit,
+    settings: { cellSize },
+  })
   console.log(JSON.stringify({ delta, tick, model }, null, 2))
 
   previous = now

@@ -1,20 +1,22 @@
 import { useEffect, useState } from 'react'
-import { text } from 'stream/consumers'
 import { EVENT, MSG, socket } from './Api'
-import Canvas from './Canvas'
-import { Player, Fruit } from './Canvas'
+import Canvas, { ServerState, Player, Fruit, Settings } from './Canvas'
 
-type Running = string
-type ServerStatus = 'Idle' | Running
+
+type ServerStatus = {
+  state: ServerState | "Disconnected"
+  id: string | null
+}
 
 function App() {
-  const [serverStatus, setServerStatus] = useState<ServerStatus>('Idle')
+  const [serverStatus, setServerStatus] = useState<ServerStatus>({state: "Disconnected", id: null })
   const [players, setPlayers] = useState<Player[]>([])
   const [fruit, setFruit] = useState<Fruit | null>(null)
+  const [settings, setSettings] = useState<Settings | null>(null)
 
   useEffect(() => {
     socket.on(MSG.CONNECT, () => {
-      setServerStatus(socket.id)
+      setServerStatus({state: "Loading", id: socket.id})
 
       // Try to start the game
       socket.emit(MSG.INITIALIZE, {
@@ -33,40 +35,52 @@ function App() {
       })
 
       // Listen to game updates and save them in our state
-      socket.on(EVENT.STATE_UPDATE, ({ players, fruit }) => {
+      socket.on(EVENT.STATE_UPDATE, ({ state, players, fruit, settings }) => {
+        setServerStatus({state: state, id: socket.id})
         setPlayers(players)
         setFruit(fruit)
+        setSettings(settings)
       })
     })
 
     socket.on(MSG.DISCONNECT, () => {
-      setServerStatus('Idle')
+      setServerStatus({state: "Disconnected", id: null})
       setPlayers([])
       setFruit(null)
     })
   }, [])
 
+  const applicationIsReady = players.length > 0 && fruit && settings
+
   return (
     <div className="App">
       <header className="App-header">
-        {serverStatus === 'Idle' ? (
-          'Could not connect to socket server'
+        {serverStatus.state === 'Loading' ? (
+          'Waiting on server...'
+        ): serverStatus.state === 'Disconnected' ? (
+          'Disconnected from server'
         ) : (
           <div>
             <div>
               Players active:
               <div>
                 {players.map((player) => (
-                  <ul key={player.id} style={{textAlign: "left"}}>
-                    <li>ID: {player.id}{player.id === serverStatus && " (You)"}</li>
+                  <ul key={player.id} style={{ textAlign: 'left' }}>
+                    <li>
+                      ID: {player.id}
+                      {player.id === serverStatus.id && ' (You)'}
+                    </li>
                     <li>Points: {player.length}</li>
                   </ul>
                 ))}
               </div>
-              <p>
-              </p>
+              <p></p>
             </div>
-            {players ? <Canvas players={players} fruit={fruit} /> : 'Loading...'}
+            {applicationIsReady && serverStatus.state === 'Playing' ? (
+              <Canvas players={players} fruit={fruit} settings={settings} />
+            ) : (
+              'Loading...'
+            )}
           </div>
         )}
       </header>

@@ -20,14 +20,22 @@ export interface Fruit {
   position: Position
 }
 
+export type ServerState = "Loading" | "Init" | "Select" | "Playing" | "Error"
+export interface Settings {
+  state: ServerState
+  cellSize: number
+}
+
 interface Props {
   [x: string]: any
   players: Player[]
-  fruit: Fruit | null
+  fruit: Fruit
+  settings: Settings
 }
 
-export default function Canvas({ players, fruit }: Props) {
+export default function Canvas({ players, fruit, settings }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const { cellSize } = settings
 
   function drawSnake(context: Context, player: Player) {
     for (let index = 0; index < player.position.length; index++) {
@@ -42,12 +50,12 @@ export default function Canvas({ players, fruit }: Props) {
     context.fillStyle = '#1a1a1c'
     context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
-    for (let index = 0; index <= context.canvas.width; index += 25) {
+    for (let index = 0; index <= context.canvas.width; index += cellSize) {
       context.moveTo(0.5 + index, 0)
       context.lineTo(0.5 + index, context.canvas.height)
     }
 
-    for (let index = 0; index <= context.canvas.height; index += 25) {
+    for (let index = 0; index <= context.canvas.height; index += cellSize) {
       context.moveTo(0, 0.5 + index)
       context.lineTo(context.canvas.width, 0.5 + index)
     }
