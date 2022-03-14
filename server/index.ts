@@ -196,20 +196,17 @@ function updateFruit(player: Player, fruit?: Fruit) {
 }
 
 function accountForTeleportation(position: Position) {
-  if (position.y === 0 - playerSize) {
+  if (position.y <= 0 - playerSize) {
     return { ...position, y: canvasSize - playerSize }
-  }
-  if (position.y === canvasSize) {
+  } else if (position.y >= canvasSize) {
     return { ...position, y: 0 }
-  }
-  if (position.x <= 0 - playerSize) {
+  } else if (position.x <= 0 - playerSize) {
     return { ...position, x: canvasSize - playerSize }
-  }
-  if (position.x >= canvasSize) {
+  } else if (position.x >= canvasSize) {
     return { ...position, x: 0 }
+  } else {
+    return position
   }
-
-  return position
 }
 
 function addFakeFollower(player: Player) {
