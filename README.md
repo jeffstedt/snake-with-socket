@@ -24,7 +24,13 @@ Or run them as separate processes
   - [x] Continues movement
   - [x] Make Snake stay in bound
   - [x] Eat fruit
-  - [ ] Gain length
+  - [ ] Gain length / earn point
   - [ ] Snake self-collision
 - [ ] Make it possible to input custom Snake color
+- [ ] Unit tests for core game features
+  - [ ] Continues movement
+  - [ ] Teleportation
+  - [ ] Gain length / earn point
+  - [ ] Self collision
+  - [ ] Snake.position[] logic
 - [ ] Snake multiplayer?
