@@ -33,7 +33,6 @@ type Msg =
   | { type: 'NewDirection'; playerId: string; keyDown: KeyDown }
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'UpdateFruit'; player: Player }
-  | { type: 'UpdatePlayerLength'; player: Player }
 
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
@@ -93,20 +92,6 @@ function updateModel(prevModel: Model, msg: Msg) {
         fruit: updateFruit(msg.player, model.fruit),
       }
       break
-    case 'UpdatePlayerLength':
-      model = {
-        ...prevModel,
-        state: 'Playing',
-        players:
-          model.players?.map((player) =>
-            player.id === msg.player.id
-              ? {
-                  ...player,
-                }
-              : player
-          ) || [],
-      }
-      break
     case 'Loading':
       model = { ...prevModel, ...defaultModel() }
       break
@@ -162,31 +147,25 @@ function gameLoop() {
 
   // Update
 
-  // for (let index = 0; index < model.players.length; index++) {
-  //   const player = model.players[index]
-  // }
-
   if (model.players && model.players[0]) {
-    const playerOne = model.players[0]
+    for (let index = 0; index < model.players.length; index++) {
+      const player = model.players[index]
 
-    if (playerIsFruitPosition(playerOne.position, model.fruit?.position)) {
-      playerOne.positions.push({ ...playerOne.position })
+      if (playerIsFruitPosition(player.position, model.fruit?.position)) {
+        player.positions.push({ ...player.position })
+      }
+
+      updateModel(model, { type: 'UpdatePlayer', player: player })
+      updateModel(model, { type: 'UpdateFruit', player: player })
+
+      player.positions.push({ ...player.position })
+      player.positions.shift()
     }
-    updateModel(model, { type: 'UpdatePlayer', player: playerOne })
-
-    // playerOne.position = updatePlayerPosition(playerOne, playerOne.direction, model.fruit)
-
-    updateModel(model, { type: 'UpdateFruit', player: playerOne })
-    // updateModel(model, { type: 'UpdatePlayerLength', player: playerOne })
-
-    playerOne.positions.push({ ...playerOne.position })
-    playerOne.positions.shift()
-
-    console.log(JSON.stringify({ delta, tick, playerOne }, null, 2))
   }
 
   // Then emit
   io.emit(EVENT.STATE_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
+  console.log(JSON.stringify({ delta, tick, model }, null, 2))
 
   previous = now
   tick++
