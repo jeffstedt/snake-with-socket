@@ -34,7 +34,6 @@ type Msg =
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'UpdateFruit'; player: Player }
   | { type: 'UpdatePlayerLength'; player: Player }
-  | { type: 'AddPoint'; player: Player }
 
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
@@ -80,8 +79,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  prevPosition: getPlayerHead(player.positions), // Should be more dynamic..
-                  positions: [updatePlayerPosition(player, player.direction)],
+                  position: updatePlayerPosition(player, player.direction),
                   length: updatePoint(player, model.fruit),
                 }
               : player
@@ -104,7 +102,6 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  positions: [...player.positions, ...addFakeFollower(player)],
                 }
               : player
           ) || [],
@@ -164,24 +161,39 @@ function gameLoop() {
   let delta = (now - previous) / 1000
 
   // Update
-  if (model.players)
-    for (let index = 0; index < model.players.length; index++) {
-      const player = model.players[index]
-      updateModel(model, { type: 'UpdatePlayer', player: player })
-      updateModel(model, { type: 'UpdateFruit', player: player })
-      updateModel(model, { type: 'UpdatePlayerLength', player: player })
+
+  // for (let index = 0; index < model.players.length; index++) {
+  //   const player = model.players[index]
+  // }
+
+  if (model.players && model.players[0]) {
+    const playerOne = model.players[0]
+
+    if (playerIsFruitPosition(playerOne.position, model.fruit?.position)) {
+      playerOne.positions.push({ ...playerOne.position })
     }
+    updateModel(model, { type: 'UpdatePlayer', player: playerOne })
+
+    // playerOne.position = updatePlayerPosition(playerOne, playerOne.direction, model.fruit)
+
+    updateModel(model, { type: 'UpdateFruit', player: playerOne })
+    // updateModel(model, { type: 'UpdatePlayerLength', player: playerOne })
+
+    playerOne.positions.push({ ...playerOne.position })
+    playerOne.positions.shift()
+
+    console.log(JSON.stringify({ delta, tick, playerOne }, null, 2))
+  }
 
   // Then emit
   io.emit(EVENT.STATE_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
-  console.log(JSON.stringify({ delta, tick, model }, null, 2))
 
   previous = now
   tick++
 }
 
 function updatePoint(player: Player, fruit?: Fruit) {
-  const playerPosition = getPlayerHead(player.positions)
+  const playerPosition = player.position
   if (playerIsFruitPosition(playerPosition, fruit?.position)) {
     return player.length + 1
   } else {
@@ -190,7 +202,7 @@ function updatePoint(player: Player, fruit?: Fruit) {
 }
 
 function updateFruit(player: Player, fruit?: Fruit) {
-  const playerPosition = getPlayerHead(player.positions)
+  const playerPosition = player.position
   if (playerIsFruitPosition(playerPosition, fruit?.position)) {
     return createFruit()
   } else {
@@ -198,41 +210,32 @@ function updateFruit(player: Player, fruit?: Fruit) {
   }
 }
 
-function accountForTeleportation(positions: Position) {
-  if (positions.y <= 0 - playerSize) {
-    return { ...positions, y: canvasSize - playerSize }
-  } else if (positions.y >= canvasSize) {
-    return { ...positions, y: 0 }
-  } else if (positions.x <= 0 - playerSize) {
-    return { ...positions, x: canvasSize - playerSize }
-  } else if (positions.x >= canvasSize) {
-    return { ...positions, x: 0 }
+function accountForTeleportation(position: Position) {
+  if (position.y <= 0 - playerSize) {
+    return { ...position, y: canvasSize - playerSize }
+  } else if (position.y >= canvasSize) {
+    return { ...position, y: 0 }
+  } else if (position.x <= 0 - playerSize) {
+    return { ...position, x: canvasSize - playerSize }
+  } else if (position.x >= canvasSize) {
+    return { ...position, x: 0 }
   } else {
-    return positions
+    return position
   }
-}
-
-function addFakeFollower(player: Player) {
-  const positions = player.prevPosition
-  let chidlren = []
-  for (let index = 0; index < player.length; index++) {
-    chidlren.push({ x: positions.x, y: positions.y })
-  }
-  return chidlren
 }
 
 function updatePlayerPosition(player: Player, direction: PlayerDirection): Position {
-  const positions = getPlayerHead(player.positions)
+  const position = player.position
 
   switch (direction) {
     case 'Up':
-      return accountForTeleportation({ ...positions, y: positions.y - playerSize })
+      return { ...accountForTeleportation({ ...position, y: position.y - playerSize }) }
     case 'Down':
-      return accountForTeleportation({ ...positions, y: positions.y + playerSize })
+      return { ...accountForTeleportation({ ...position, y: position.y + playerSize }) }
     case 'Left':
-      return accountForTeleportation({ ...positions, x: positions.x - playerSize })
+      return { ...accountForTeleportation({ ...position, x: position.x - playerSize }) }
     case 'Right':
-      return accountForTeleportation({ ...positions, x: positions.x + playerSize })
+      return { ...accountForTeleportation({ ...position, x: position.x + playerSize }) }
   }
 }
 
@@ -261,7 +264,8 @@ const createPlayer = (id: string, color: string) => ({
   size: playerSize,
   length: 1,
   prevPosition: { x: canvasSize / 2, y: canvasSize / 2 },
-  positions: [{ x: canvasSize / 2, y: canvasSize / 2 }],
+  position: { x: canvasSize / 2, y: canvasSize / 2 },
+  positions: [],
   direction: ['Up', 'Right', 'Left', 'Down'].reduce((p, c, i, array) => {
     return array[Math.floor(Math.random() * Math.floor(array.length))]
   }) as PlayerDirection,

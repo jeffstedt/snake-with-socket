@@ -24,6 +24,7 @@ export interface Player {
   color: string
   size: number
   length: number
+  position: Position
   positions: Position[]
 }
 

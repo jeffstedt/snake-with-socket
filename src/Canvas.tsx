@@ -14,8 +14,9 @@ export default function Canvas({ players, fruit, settings }: Props) {
   const { cellSize } = settings
 
   function drawSnake(context: Context, player: Player) {
-    for (let index = 0; index < player.positions.length; index++) {
-      const cell = player.positions[index]
+    const cells = [player.position, ...player.positions]
+    for (let index = 0; index < cells.length; index++) {
+      const cell = cells[index]
       context.fillStyle = player.color
       context.fillRect(cell.x, cell.y, player.size, player.size)
     }
