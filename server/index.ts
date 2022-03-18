@@ -80,8 +80,8 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  prevPosition: getPlayerHead(player.position), // Should be more dynamic..
-                  position: [updatePlayerPosition(player, player.direction)],
+                  prevPosition: getPlayerHead(player.positions), // Should be more dynamic..
+                  positions: [updatePlayerPosition(player, player.direction)],
                   length: updatePoint(player, model.fruit),
                 }
               : player
@@ -104,7 +104,7 @@ function updateModel(prevModel: Model, msg: Msg) {
             player.id === msg.player.id
               ? {
                   ...player,
-                  position: [...player.position, ...addFakeFollower(player)],
+                  positions: [...player.positions, ...addFakeFollower(player)],
                 }
               : player
           ) || [],
@@ -138,7 +138,7 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
   })
 
   socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
-    // Client wants to update the position
+    // Client wants to update the positions
     const allowedKeyEvents =
       keyDown === 'ArrowUp' || keyDown === 'ArrowDown' || keyDown === 'ArrowRight' || keyDown === 'ArrowLeft'
 
@@ -181,7 +181,7 @@ function gameLoop() {
 }
 
 function updatePoint(player: Player, fruit?: Fruit) {
-  const playerPosition = getPlayerHead(player.position)
+  const playerPosition = getPlayerHead(player.positions)
   if (playerIsFruitPosition(playerPosition, fruit?.position)) {
     return player.length + 1
   } else {
@@ -190,7 +190,7 @@ function updatePoint(player: Player, fruit?: Fruit) {
 }
 
 function updateFruit(player: Player, fruit?: Fruit) {
-  const playerPosition = getPlayerHead(player.position)
+  const playerPosition = getPlayerHead(player.positions)
   if (playerIsFruitPosition(playerPosition, fruit?.position)) {
     return createFruit()
   } else {
@@ -198,41 +198,41 @@ function updateFruit(player: Player, fruit?: Fruit) {
   }
 }
 
-function accountForTeleportation(position: Position) {
-  if (position.y <= 0 - playerSize) {
-    return { ...position, y: canvasSize - playerSize }
-  } else if (position.y >= canvasSize) {
-    return { ...position, y: 0 }
-  } else if (position.x <= 0 - playerSize) {
-    return { ...position, x: canvasSize - playerSize }
-  } else if (position.x >= canvasSize) {
-    return { ...position, x: 0 }
+function accountForTeleportation(positions: Position) {
+  if (positions.y <= 0 - playerSize) {
+    return { ...positions, y: canvasSize - playerSize }
+  } else if (positions.y >= canvasSize) {
+    return { ...positions, y: 0 }
+  } else if (positions.x <= 0 - playerSize) {
+    return { ...positions, x: canvasSize - playerSize }
+  } else if (positions.x >= canvasSize) {
+    return { ...positions, x: 0 }
   } else {
-    return position
+    return positions
   }
 }
 
 function addFakeFollower(player: Player) {
-  const position = player.prevPosition
+  const positions = player.prevPosition
   let chidlren = []
   for (let index = 0; index < player.length; index++) {
-    chidlren.push({ x: position.x, y: position.y })
+    chidlren.push({ x: positions.x, y: positions.y })
   }
   return chidlren
 }
 
 function updatePlayerPosition(player: Player, direction: PlayerDirection): Position {
-  const position = getPlayerHead(player.position)
+  const positions = getPlayerHead(player.positions)
 
   switch (direction) {
     case 'Up':
-      return accountForTeleportation({ ...position, y: position.y - playerSize })
+      return accountForTeleportation({ ...positions, y: positions.y - playerSize })
     case 'Down':
-      return accountForTeleportation({ ...position, y: position.y + playerSize })
+      return accountForTeleportation({ ...positions, y: positions.y + playerSize })
     case 'Left':
-      return accountForTeleportation({ ...position, x: position.x - playerSize })
+      return accountForTeleportation({ ...positions, x: positions.x - playerSize })
     case 'Right':
-      return accountForTeleportation({ ...position, x: position.x + playerSize })
+      return accountForTeleportation({ ...positions, x: positions.x + playerSize })
   }
 }
 
@@ -242,12 +242,12 @@ function playerIsFruitPosition(playerPosition: Position, fruitPosition?: Positio
   return playerPosition.x === fruitPosition?.x && playerPosition?.y === fruitPosition.y
 }
 
-function getPlayerHead(position: Position[]) {
-  return position[0]
+function getPlayerHead(positions: Position[]) {
+  return positions[0]
 }
 
-function getPlayerTail(position: Position[]) {
-  return position[position.length - 1]
+function getPlayerTail(positions: Position[]) {
+  return positions[positions.length - 1]
 }
 
 function hrtimeMs() {
@@ -261,7 +261,7 @@ const createPlayer = (id: string, color: string) => ({
   size: playerSize,
   length: 1,
   prevPosition: { x: canvasSize / 2, y: canvasSize / 2 },
-  position: [{ x: canvasSize / 2, y: canvasSize / 2 }],
+  positions: [{ x: canvasSize / 2, y: canvasSize / 2 }],
   direction: ['Up', 'Right', 'Left', 'Down'].reduce((p, c, i, array) => {
     return array[Math.floor(Math.random() * Math.floor(array.length))]
   }) as PlayerDirection,

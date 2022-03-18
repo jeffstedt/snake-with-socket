@@ -57,6 +57,6 @@ export interface Player {
   size: number
   length: number
   prevPosition: Position
-  position: Position[]
+  positions: Position[]
   direction: PlayerDirection
 }
