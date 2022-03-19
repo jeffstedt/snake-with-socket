@@ -19,6 +19,7 @@ type Msg =
   | { type: 'NewPlayerDirection'; playerId: string; keyDown: KeyDown }
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'UpdateFruit'; player: Player }
+  | { type: 'CheckForCollision'; player: Player }
 
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
@@ -69,6 +70,18 @@ function updateModel(prevModel: Model, msg: Msg) {
             : player
         ),
         fruit: updateFruit(msg.player, model.fruit),
+      }
+      break
+    case 'CheckForCollision':
+      if (msg.player.positions.some((cell) => cell.x === msg.player.position.x && cell.y === msg.player.position.y)) {
+        model = {
+          ...prevModel,
+          state: 'Playing',
+          players: [createPlayer(msg.player.id, msg.player.color)],
+          fruit: createFruit(),
+        }
+      } else {
+        model = prevModel
       }
       break
     case 'Loading':
@@ -129,11 +142,12 @@ function gameLoop() {
     const player = model.players[index]
     updateModel(model, { type: 'UpdatePlayer', player })
     updateModel(model, { type: 'UpdateFruit', player })
+    updateModel(model, { type: 'CheckForCollision', player })
   }
 
   // Then emit
   io.emit(EVENT.STATE_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
-  console.log(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
+  // console.log(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
 
   loop.previousClock = nowClock
   loop.tick++

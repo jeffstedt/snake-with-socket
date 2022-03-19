@@ -1,5 +1,5 @@
 import { useRef, useEffect } from 'react'
-import { Player, Fruit, Settings } from "./shared-types"
+import { Player, Fruit, Settings } from './shared-types'
 
 type Context = CanvasRenderingContext2D
 
@@ -61,6 +61,7 @@ export default function Canvas({ players, fruit, settings }: Props) {
     if (context == null) throw new Error('Could not get context')
 
     draw(context)
+    // eslint-disable-next-line
   }, [players, fruit]) // Draw on incoming emited changes
 
   return <canvas width={`${settings.canvasSize}px`} height={`${settings.canvasSize}px`} ref={canvasRef} />
