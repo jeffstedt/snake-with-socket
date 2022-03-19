@@ -5,7 +5,7 @@ import { EVENT, MSG, Player, KeyDown, Model, Position, PlayerDirection, Fruit } 
 const httpServer = createServer()
 const io = new Server(httpServer)
 
-const TICK_RATE = 10
+const TICK_RATE = 5
 
 let tick = 0
 let previous = hrtimeMs()
@@ -79,16 +79,11 @@ function updateModel(prevModel: Model, msg: Msg) {
               ? {
                   ...player,
                   position: updatePlayerPosition(player, player.direction),
+                  positions: updateTailPositions(player),
                   length: updatePoint(player, model.fruit),
                 }
               : player
           ) || [],
-      }
-      break
-    case 'UpdateFruit':
-      model = {
-        ...prevModel,
-        state: 'Playing',
         fruit: updateFruit(msg.player, model.fruit),
       }
       break
@@ -99,6 +94,15 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = prevModel
       break
   }
+}
+
+function updateTailPositions(player: Player): Position[] {
+  const newPositions = playerIsFruitPosition(player.position, model.fruit?.position)
+    ? [...player.positions, player.position]
+    : player.positions
+  const shiftedPositions = [...newPositions, player.position]
+  const [, ...shiftedTails] = shiftedPositions
+  return shiftedTails
 }
 
 // Server Logic
@@ -147,19 +151,11 @@ function gameLoop() {
 
   // Update
 
-  if (model.players && model.players[0]) {
+  if (model.players) {
     for (let index = 0; index < model.players.length; index++) {
       const player = model.players[index]
-
-      if (playerIsFruitPosition(player.position, model.fruit?.position)) {
-        player.positions.push({ ...player.position })
-      }
-
       updateModel(model, { type: 'UpdatePlayer', player: player })
       updateModel(model, { type: 'UpdateFruit', player: player })
-
-      player.positions.push({ ...player.position })
-      player.positions.shift()
     }
   }
 
@@ -172,8 +168,7 @@ function gameLoop() {
 }
 
 function updatePoint(player: Player, fruit?: Fruit) {
-  const playerPosition = player.position
-  if (playerIsFruitPosition(playerPosition, fruit?.position)) {
+  if (playerIsFruitPosition(player.position, fruit?.position)) {
     return player.length + 1
   } else {
     return player.length
@@ -181,8 +176,7 @@ function updatePoint(player: Player, fruit?: Fruit) {
 }
 
 function updateFruit(player: Player, fruit?: Fruit) {
-  const playerPosition = player.position
-  if (playerIsFruitPosition(playerPosition, fruit?.position)) {
+  if (playerIsFruitPosition(player.position, fruit?.position)) {
     return createFruit()
   } else {
     return fruit
@@ -242,7 +236,6 @@ const createPlayer = (id: string, color: string) => ({
   color,
   size: playerSize,
   length: 1,
-  prevPosition: { x: canvasSize / 2, y: canvasSize / 2 },
   position: { x: canvasSize / 2, y: canvasSize / 2 },
   positions: [],
   direction: ['Up', 'Right', 'Left', 'Down'].reduce((p, c, i, array) => {
