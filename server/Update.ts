@@ -1,4 +1,4 @@
-import { Player, KeyDown, Position, PlayerDirection, Fruit } from './Interface'
+import { Player, KeyDown, Position, PlayerDirection, Fruit } from '../src/shared-types'
 import { canvasSize, playerSize } from './Constants'
 import { createFruit } from './Utils'
 

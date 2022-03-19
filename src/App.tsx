@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react'
-import { socket, EVENT, MSG, ServerState, Player, Fruit, Settings } from './Api'
+import React, {  useEffect, useState } from 'react'
+import { socket } from './Api'
+import { Player, Fruit, EVENT, MSG, ServerState, Settings } from "./shared-types"
 import Canvas from './Canvas'
 
 type ServerStatus = {

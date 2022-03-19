@@ -1,7 +1,8 @@
 import { useRef, useEffect } from 'react'
-import { Player, Fruit, Settings } from './Api'
+import { Player, Fruit, Settings } from "./shared-types"
 
 type Context = CanvasRenderingContext2D
+
 interface Props {
   [x: string]: any
   players: Player[]

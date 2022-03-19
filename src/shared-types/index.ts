@@ -17,7 +17,7 @@ export type PlayerDirection = 'Up' | 'Right' | 'Left' | 'Down'
 
 export type KeyDown = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
 
-interface Game {
+export interface Game {
   players: Player[]
   fruit: Fruit
 }
@@ -48,6 +48,8 @@ export interface Position {
 }
 
 export interface Fruit {
+  color: string
+  size: number
   position: Position
 }
 
@@ -59,4 +61,12 @@ export interface Player {
   position: Position
   positions: Position[]
   direction: PlayerDirection
+}
+
+export type ServerState = 'Loading' | 'Init' | 'Select' | 'Playing' | 'Error'
+
+export interface Settings {
+  state: ServerState
+  canvasSize: number
+  cellSize: number
 }

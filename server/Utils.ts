@@ -1,5 +1,5 @@
 import { playerSize, canvasSize } from './Constants'
-import { PlayerDirection } from './Interface'
+import { PlayerDirection, Fruit } from '../src/shared-types'
 
 function hourTimeMs() {
   let time = process.hrtime()
@@ -20,7 +20,7 @@ const createPlayer = (id: string, color: string) => ({
 
 const randomNum = () => Math.floor(Math.random() * 20) * 25
 
-const createFruit = () => ({
+const createFruit = (): Fruit => ({
   color: '#FF0000',
   size: playerSize,
   position: { x: randomNum(), y: randomNum() },

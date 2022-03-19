@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
-import { EVENT, MSG, Player, KeyDown, Model } from './Interface'
+import { EVENT, MSG, Player, KeyDown, Model } from '../src/shared-types'
 import { tickLengthMs, canvasSize, cellSize, defaultModel } from './Constants'
 import { hourTimeMs, createPlayer, createFruit } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'

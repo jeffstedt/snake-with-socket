@@ -1,4 +1,4 @@
-import { Model } from './Interface'
+import { Model } from '../src/shared-types'
 import { createFruit } from './Utils'
 
 const TICK_RATE = 10
