@@ -8,11 +8,7 @@ import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, up
 const httpServer = createServer()
 const io = new Server(httpServer)
 
-let loop = {
-  tick: 0,
-  previousClock: hourTimeMs(),
-}
-
+let loop = { tick: 0, previousClock: hourTimeMs() }
 let model: Model = defaultModel()
 
 type Msg =
@@ -20,7 +16,7 @@ type Msg =
   | { type: 'Playing' }
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
-  | { type: 'NewDirection'; playerId: string; keyDown: KeyDown }
+  | { type: 'NewPlayerDirection'; playerId: string; keyDown: KeyDown }
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'UpdateFruit'; player: Player }
 
@@ -44,36 +40,34 @@ function updateModel(prevModel: Model, msg: Msg) {
         players: model.players.filter((player) => player.id !== msg.socketId),
       }
       break
-    case 'NewDirection':
+    case 'NewPlayerDirection':
       model = {
         ...prevModel,
         state: 'Playing',
-        players:
-          model.players.map((player) =>
-            player.id === msg.playerId
-              ? {
-                  ...player,
-                  direction: updatePlayerDirection(msg.keyDown, player.direction),
-                }
-              : player
-          ) || [],
+        players: model.players.map((player) =>
+          player.id === msg.playerId
+            ? {
+                ...player,
+                direction: updatePlayerDirection(msg.keyDown, player.direction),
+              }
+            : player
+        ),
       }
       break
     case 'UpdatePlayer':
       model = {
         ...prevModel,
         state: 'Playing',
-        players:
-          model.players.map((player) =>
-            player.id === msg.player.id
-              ? {
-                  ...player,
-                  position: updatePlayerPosition(player, player.direction),
-                  positions: updateTailPositions(player, model.fruit),
-                  length: updatePoint(player, model.fruit),
-                }
-              : player
-          ) || [],
+        players: model.players.map((player) =>
+          player.id === msg.player.id
+            ? {
+                ...player,
+                position: updatePlayerPosition(player, player.direction),
+                positions: updateTailPositions(player, model.fruit),
+                length: updatePoint(player, model.fruit),
+              }
+            : player
+        ),
         fruit: updateFruit(msg.player, model.fruit),
       }
       break
@@ -111,7 +105,7 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
 
     if (allowedKeyEvents) {
       //  This happens outside the game loop, is it a problem?
-      updateModel(model, { type: 'NewDirection', playerId: playerId, keyDown })
+      updateModel(model, { type: 'NewPlayerDirection', playerId: playerId, keyDown })
     }
   })
 
@@ -130,12 +124,11 @@ function gameLoop() {
   const nowClock = hourTimeMs()
   const delta = (nowClock - loop.previousClock) / 1000
 
-  // Update
-
+  // Game updates
   for (let index = 0; index < model.players.length; index++) {
     const player = model.players[index]
-    updateModel(model, { type: 'UpdatePlayer', player: player })
-    updateModel(model, { type: 'UpdateFruit', player: player })
+    updateModel(model, { type: 'UpdatePlayer', player })
+    updateModel(model, { type: 'UpdateFruit', player })
   }
 
   // Then emit
