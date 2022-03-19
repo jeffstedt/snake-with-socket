@@ -27,6 +27,7 @@ Or run them as separate processes
   - [x] Gain length / earn point
   - [x] Snake self-collision
 - [ ] Make it possible to input custom Snake color
+- [ ] Bug: Make is impossible for fruit to spawn at Snake position
 - [ ] Unit tests for core game features
   - [ ] Continues movement
   - [ ] Teleportation

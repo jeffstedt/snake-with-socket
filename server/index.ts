@@ -73,7 +73,11 @@ function updateModel(prevModel: Model, msg: Msg) {
       }
       break
     case 'CheckForCollision':
-      if (msg.player.positions.some((cell) => cell.x === msg.player.position.x && cell.y === msg.player.position.y)) {
+      if (
+        msg.player.positions.some(
+          (tailCell) => tailCell.x === msg.player.position.x && tailCell.y === msg.player.position.y
+        )
+      ) {
         model = {
           ...prevModel,
           state: 'Playing',
@@ -147,7 +151,7 @@ function gameLoop() {
 
   // Then emit
   io.emit(EVENT.STATE_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
-  // console.log(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
+  console.log(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
 
   loop.previousClock = nowClock
   loop.tick++
