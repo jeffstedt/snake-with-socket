@@ -17,6 +17,12 @@ Or run them as separate processes
   yarn client
 ```
 
+Or run as a Docker image
+```
+docker build . -t snake-with-socket
+docker run -p 3000:3000 -p 3001:3001 snake-with-socket
+```
+
 ### Todo
 - [x] Basic client setup
 - [x] Basic server setup
