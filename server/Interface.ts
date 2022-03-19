@@ -18,8 +18,8 @@ export type PlayerDirection = 'Up' | 'Right' | 'Left' | 'Down'
 export type KeyDown = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
 
 interface Game {
-  players?: Player[]
-  fruit?: Fruit
+  players: Player[]
+  fruit: Fruit
 }
 
 export interface Loading extends Game {
