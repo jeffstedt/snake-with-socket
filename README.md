@@ -20,11 +20,17 @@ Or run them as separate processes
 ### Todo
 - [x] Basic client setup
 - [x] Basic server setup
-- [ ] Implement actual Snake gameplay
+- [x] Implement actual Snake gameplay
   - [x] Continues movement
   - [x] Make Snake stay in bound
   - [x] Eat fruit
-  - [ ] Gain length
-  - [ ] Snake self-collision
+  - [x] Gain length / earn point
+  - [x] Snake self-collision
 - [ ] Make it possible to input custom Snake color
+- [ ] Unit tests for core game features
+  - [ ] Continues movement
+  - [ ] Teleportation
+  - [ ] Gain length / earn point
+  - [ ] Self collision
+  - [ ] Snake.position[] logic
 - [ ] Snake multiplayer?
