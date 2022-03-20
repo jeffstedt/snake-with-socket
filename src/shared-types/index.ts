@@ -66,7 +66,6 @@ export interface Player {
 export type ServerState = 'Loading' | 'Init' | 'Select' | 'Playing' | 'Error' | 'Disconnected'
 
 export interface Settings {
-  state: ServerState
   canvasSize: number
   cellSize: number
 }
