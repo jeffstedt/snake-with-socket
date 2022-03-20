@@ -1,18 +1,11 @@
-import { Model } from '../src/shared-types'
-import { createFruit } from './Utils'
+const SERVER_PORT = 3001
 
 const TICK_RATE = 10
-const tickLengthMs = 1000 / TICK_RATE // -> 100ms -> 10 fps
+const TICK_LENGTH_MS = 1000 / TICK_RATE // -> 100ms -> 10 fps
 
-const area = 20
-const canvasSize = 500
-const cellSize = canvasSize / area
-const playerSize = cellSize
+const AREA = 20
+const CANVAS_SIZE = 500
+const CELL_SIZE = CANVAS_SIZE / AREA
+const PLAYER_SIZE = CELL_SIZE
 
-const defaultModel = (): Model => ({
-  state: 'Loading',
-  players: [],
-  fruit: createFruit(),
-})
-
-export { tickLengthMs, canvasSize, cellSize, playerSize, defaultModel }
+export { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_SIZE }

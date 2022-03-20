@@ -10,12 +10,29 @@ export enum MSG {
   'START_UP' = 'start_up',
 }
 
+export enum PlayerDirection {
+  'UP' = 'UP',
+  'RIGHT' = 'RIGHT',
+  'LEFT' = 'LEFT',
+  'DOWN' = 'DOWN',
+}
+
+export enum ArrowKey {
+  'ARROWUP' = 'ARROWUP',
+  'ARROWRIGHT' = 'ARROWRIGHT',
+  'ARROWDOWN' = 'ARROWDOWN',
+  'ARROWLEFT' = 'ARROWLEFT',
+}
+
+export enum CharacterKey {
+  'W' = 'W',
+  'D' = 'D',
+  'S' = 'S',
+  'A' = 'A',
+}
+
 // Model
 export type Model = Loading | Init | Select | Playing | Error
-
-export type PlayerDirection = 'Up' | 'Right' | 'Left' | 'Down'
-
-export type KeyDown = 'ArrowUp' | 'ArrowRight' | 'ArrowDown' | 'ArrowLeft'
 
 export interface Game {
   players: Player[]

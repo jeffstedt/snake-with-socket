@@ -1,8 +1,8 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
-import { EVENT, MSG, Player, KeyDown, Model } from '../src/shared-types'
-import { tickLengthMs, canvasSize, cellSize, defaultModel } from './Constants'
-import { hourTimeMs, createPlayer, createFruit } from './Utils'
+import { EVENT, MSG, Player, Model, PlayerDirection } from '../src/shared-types'
+import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE } from './Constants'
+import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
 
 const httpServer = createServer()
@@ -16,7 +16,7 @@ type Msg =
   | { type: 'Playing' }
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
-  | { type: 'NewPlayerDirection'; playerId: string; keyDown: KeyDown }
+  | { type: 'UpdatePlayerDirection'; playerId: string; direction: PlayerDirection }
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'UpdateFruit'; player: Player }
   | { type: 'CheckForCollision'; player: Player }
@@ -41,7 +41,7 @@ function updateModel(prevModel: Model, msg: Msg) {
         players: model.players.filter((player) => player.id !== msg.socketId),
       }
       break
-    case 'NewPlayerDirection':
+    case 'UpdatePlayerDirection':
       model = {
         ...prevModel,
         state: 'Playing',
@@ -49,7 +49,7 @@ function updateModel(prevModel: Model, msg: Msg) {
           player.id === msg.playerId
             ? {
                 ...player,
-                direction: updatePlayerDirection(msg.keyDown, player.direction),
+                direction: updatePlayerDirection(msg.direction, player.direction),
               }
             : player
         ),
@@ -99,14 +99,14 @@ function updateModel(prevModel: Model, msg: Msg) {
 
 // Server Logic
 io.sockets.on(MSG.CONNECT, (socket: Socket) => {
-  console.log('New connection established:', socket.id)
+  console.info('New connection established:', socket.id)
 
   socket.on(MSG.INITIALIZE, (player: Player) => {
     // Client wants to start a new game
     updateModel(model, { type: 'Init', socketId: socket.id, player })
 
     // Before starting game, give client game settings
-    io.emit(MSG.START_UP, { state: model.state, settings: { canvasSize, cellSize } })
+    io.emit(MSG.START_UP, { state: model.state, settings: { canvasSize: CANVAS_SIZE, cellSize: CELL_SIZE } })
 
     if (model.state === 'Playing' && model.players.length === 1) {
       gameLoop()
@@ -117,12 +117,11 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
 
   socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
     // Client wants to update the positions
-    const allowedKeyEvents =
-      keyDown === 'ArrowUp' || keyDown === 'ArrowDown' || keyDown === 'ArrowRight' || keyDown === 'ArrowLeft'
-
-    if (allowedKeyEvents) {
-      //  This happens outside the game loop, is it a problem?
-      updateModel(model, { type: 'NewPlayerDirection', playerId: playerId, keyDown })
+    const parsedKeyDown = parseKeyDown(keyDown.toUpperCase())
+    if (parsedKeyDown) {
+      updateModel(model, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
+    } else {
+      console.info('Illigal key')
     }
   })
 
@@ -133,7 +132,7 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
 
 function gameLoop() {
   if (model.state === 'Playing' && model.players.length > 0) {
-    setTimeout(gameLoop, tickLengthMs)
+    setTimeout(gameLoop, TICK_LENGTH_MS)
   } else {
     updateModel(model, { type: 'Loading' })
   }
@@ -151,11 +150,11 @@ function gameLoop() {
 
   // Then emit
   io.emit(EVENT.STATE_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
-  console.log(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
+  console.debug(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
 
   loop.previousClock = nowClock
   loop.tick++
 }
 
-console.log('Server now running on port', 3001)
-httpServer.listen(3001)
+console.info('Server now running on port', SERVER_PORT)
+httpServer.listen(SERVER_PORT)
