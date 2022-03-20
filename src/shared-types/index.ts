@@ -63,7 +63,7 @@ export interface Player {
   direction: PlayerDirection
 }
 
-export type ServerState = 'Loading' | 'Init' | 'Select' | 'Playing' | 'Error'
+export type ServerState = 'Loading' | 'Init' | 'Select' | 'Playing' | 'Error' | 'Disconnected'
 
 export interface Settings {
   state: ServerState

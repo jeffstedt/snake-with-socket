@@ -1,10 +1,10 @@
-import React, {  useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { socket } from './Api'
-import { Player, Fruit, EVENT, MSG, ServerState, Settings } from "./shared-types"
+import { Player, Fruit, EVENT, MSG, ServerState, Settings } from './shared-types'
 import Canvas from './Canvas'
 
 type ServerStatus = {
-  state: ServerState | 'Disconnected'
+  state: ServerState
   id: string | null
 }
 
@@ -27,17 +27,20 @@ function App() {
       })
 
       // We have handshake, retrieve game settings
-      socket.on(MSG.START_UP, ({ state, settings }) => {
+      socket.on(MSG.START_UP, ({ state, settings }: { state: ServerState; settings: Settings }) => {
         setServerStatus({ state: state, id: socket.id })
         setSettings(settings)
       })
 
       // Listen to game updates and save them in our state
-      socket.on(EVENT.STATE_UPDATE, ({ state, players, fruit }) => {
-        setServerStatus({ state: state, id: socket.id })
-        setPlayers(players)
-        setFruit(fruit)
-      })
+      socket.on(
+        EVENT.STATE_UPDATE,
+        ({ state, players, fruit }: { state: ServerState; players: Player[]; fruit: Fruit }) => {
+          setServerStatus({ state: state, id: socket.id })
+          setPlayers(players)
+          setFruit(fruit)
+        }
+      )
     })
 
     // If we lose connection with server - reset app

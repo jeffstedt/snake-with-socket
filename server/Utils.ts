@@ -1,5 +1,6 @@
 import { playerSize, canvasSize } from './Constants'
 import { PlayerDirection, Fruit } from '../src/shared-types'
+import { Player } from '../src/shared-types'
 
 function hourTimeMs() {
   let time = process.hrtime()
@@ -8,7 +9,7 @@ function hourTimeMs() {
 
 const avalaibleDirections: PlayerDirection[] = ['Up', 'Right', 'Left', 'Down']
 
-const createPlayer = (id: string, color: string) => ({
+const createPlayer = (id: string, color: string): Player => ({
   id,
   color,
   size: playerSize,
