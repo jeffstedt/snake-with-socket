@@ -1,5 +1,7 @@
 # Snake game with socket.io
 
+[![Demo screenshot](/screenshot.png)]
+
 Install
 ```sh
   yarn install
