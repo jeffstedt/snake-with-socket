@@ -38,7 +38,7 @@ function hourTimeMs() {
   return time[0] * 1000 + time[1] / 1000000
 }
 
-function parseKeyDown(keyDown: string): PlayerDirection | undefined {
+function parseKeyDown(keyDown: string): PlayerDirection | 'ILLIGAL_KEY' {
   switch (keyDown) {
     case ArrowKey.ARROWUP:
     case CharacterKey.W:
@@ -53,7 +53,7 @@ function parseKeyDown(keyDown: string): PlayerDirection | undefined {
     case CharacterKey.A:
       return PlayerDirection.LEFT
     default:
-      return undefined
+      return 'ILLIGAL_KEY'
   }
 }
 

@@ -118,7 +118,7 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
   socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
     // Client wants to update the positions
     const parsedKeyDown = parseKeyDown(keyDown.toUpperCase())
-    if (parsedKeyDown) {
+    if (parsedKeyDown !== 'ILLIGAL_KEY') {
       updateModel(model, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
     } else {
       console.info('Illigal key')
