@@ -1,6 +1,6 @@
 # Snake game with socket.io
 
-[![Demo screenshot](/screenshot.png)]
+![Demo screenshot](/screenshot.png)
 
 Install
 ```sh
