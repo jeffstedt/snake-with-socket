@@ -15,5 +15,4 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build the Docker image
-      run: docker build . -t snake-with-socket
-
+      run: docker build . --file Dockerfile --tag snake-with-socket:$(date +%s)
