@@ -15,8 +15,9 @@ const defaultModel = (): Model => ({
   fruit: createFruit(),
 })
 
-const createPlayer = (id: string, color: string): Player => ({
+const createPlayer = (id: string, color: COLOR, name: string): Player => ({
   id,
+  name,
   color,
   size: PLAYER_SIZE,
   length: 1,

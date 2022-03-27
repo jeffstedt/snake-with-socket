@@ -81,7 +81,8 @@ export interface Fruit {
 
 export interface Player {
   id: string
-  color: string
+  name: string
+  color: COLOR
   size: number
   length: number
   position: Position

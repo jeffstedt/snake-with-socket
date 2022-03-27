@@ -1,21 +1,26 @@
 import React, { useState } from 'react'
 import { Settings, COLOR } from './shared-types'
 
-function SelectScreen({ settings, startGame }: { settings: Settings; startGame: (color: COLOR) => void }) {
+function SelectScreen({
+  settings,
+  startGame,
+}: {
+  settings: Settings
+  startGame: (color: COLOR, nickName: string) => void
+}) {
   const [color, setColor] = useState<COLOR | null>(null)
   const [name, setName] = useState('')
 
   function initStartGame(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     event?.preventDefault()
-    if (color && name !== '') {
-      startGame(color)
+    if (formIsValid) {
+      startGame(color, name)
+    } else {
+      throw new Error('Error: Tried to start game without required inputs')
     }
   }
 
-  const formIsValid = (color || [])?.length > 0 && name.length > 0
-
-
-
+  const formIsValid = color && name.length > 0
 
   const renderColorButton = (colorTuple: [string, COLOR]) => {
     const [colorText, colorValue] = colorTuple
@@ -26,8 +31,8 @@ function SelectScreen({ settings, startGame }: { settings: Settings; startGame: 
           event?.preventDefault()
           setColor(colorValue)
         }}
-        style={{backgroundColor: colorValue}}
-        className={colorValue === color ? 'active-color' : '' }
+        style={{ backgroundColor: colorValue }}
+        className={colorValue === color ? 'active-color' : ''}
       >
         {colorText}
       </button>
@@ -39,13 +44,21 @@ function SelectScreen({ settings, startGame }: { settings: Settings; startGame: 
       <h3>Choose color</h3>
       <div style={{ display: 'flex' }}>
         {Object.entries(settings.color)
-          .filter((color) => color[1] !== COLOR.RED)
+          .filter(([, color]) => color !== COLOR.RED)
           .map(renderColorButton)}
       </div>
       <h3>Choose nickname</h3>
-      <input type="text" onInput={(event) => setName(event.currentTarget.value)} />
+      <input
+        className={name.length > 0 ? 'active' : ''}
+        type="text"
+        onInput={(event) => setName(event.currentTarget.value)}
+      />
       <br></br>
-      <button disabled={!formIsValid} className={formIsValid ? 'active-submit' : 'inactive-submit'} onClick={(event) => initStartGame(event)}>
+      <button
+        disabled={!formIsValid}
+        className={formIsValid ? 'active' : 'inactive-submit'}
+        onClick={(event) => initStartGame(event)}
+      >
         Start game
       </button>
     </>

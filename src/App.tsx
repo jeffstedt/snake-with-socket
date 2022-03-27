@@ -56,12 +56,12 @@ function App() {
     })
   }, [])
 
-  const applicationIsReady = players.length > 0 && fruit && settings
-
-  function startGame(color: COLOR) {
+  function startGame(color: COLOR, nickName: string) {
     // Try to start the game
-    socket.emit(MSG.START_GAME, { id: socket.id, color: color })
+    socket.emit(MSG.START_GAME, { id: socket.id, color: color, name: nickName })
   }
+
+  const applicationIsReady = players.length > 0 && fruit && settings
 
   return (
     <div className="App">
@@ -80,7 +80,7 @@ function App() {
                 {players.map((player) => (
                   <ul key={player.id} style={{ textAlign: 'left' }}>
                     <li>
-                      ID: {player.id}
+                      {player.name}
                       {player.id === serverStatus.id && ' (You)'}
                     </li>
                     <li>Points: {player.length}</li>

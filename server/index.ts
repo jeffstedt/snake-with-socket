@@ -31,7 +31,7 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = {
         ...prevModel,
         state: 'Playing',
-        players: [createPlayer(msg.socketId, msg.player.color)],
+        players: [createPlayer(msg.socketId, msg.player.color, msg.player.name)],
         fruit: createFruit(),
       }
       break
@@ -85,7 +85,7 @@ function updateModel(prevModel: Model, msg: Msg) {
         model = {
           ...prevModel,
           state: 'Playing',
-          players: [createPlayer(msg.player.id, msg.player.color)],
+          players: [createPlayer(msg.player.id, msg.player.color, msg.player.name)],
           fruit: createFruit(),
         }
       } else {

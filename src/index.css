@@ -25,7 +25,8 @@ code {
   color: white;
 }
 
-button {
+button,
+input {
   font-size: 1.5rem;
   font-weight: 600;
   background-color: white;
@@ -41,24 +42,24 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+input {
+  cursor: initial;
+}
+
+button:hover,
+button:focus,
+.active-color {
   transform: translateY(2px);
   box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.85);
   opacity: 1;
 }
 
 button:active {
-  opacity: 1;
   color: white;
-  background-color: rgba(0, 0, 0, 0.85);
 }
 
 .active-color {
-  transform: translateY(2px);
-  opacity: 1;
   color: white;
-  background-color: rgba(0, 0, 0, 0.85);
-  box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.85);
   cursor: default;
 }
 
@@ -68,6 +69,7 @@ button:active {
   opacity: 0.5;
 }
 
-.active-submit {
+.active,
+input:focus {
   opacity: 1;
 }
