@@ -1,15 +1,13 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+    'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
-    monospace;
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 
 .App {
@@ -25,4 +23,51 @@ code {
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+
+button {
+  font-size: 1.5rem;
+  font-weight: 600;
+  background-color: white;
+  color: #000;
+  border: 3px solid rgba(0, 0, 0, 0.85);
+  padding: 10px 30px;
+  font-family: Courier;
+  box-shadow: -3px 4px 0px 0px rgba(0, 0, 0, 0.85);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
+  margin: 1rem;
+  opacity: 0.5;
+  text-transform: capitalize;
+  cursor: pointer;
+}
+
+button:hover {
+  transform: translateY(2px);
+  box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.85);
+  opacity: 1;
+}
+
+button:active {
+  opacity: 1;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.85);
+}
+
+.active-color {
+  transform: translateY(2px);
+  opacity: 1;
+  color: white;
+  background-color: rgba(0, 0, 0, 0.85);
+  box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.85);
+  cursor: default;
+}
+
+.inactive-submit:hover {
+  transform: none;
+  box-shadow: -3px 4px 0px 0px rgba(0, 0, 0, 0.85);
+  opacity: 0.5;
+}
+
+.active-submit {
+  opacity: 1;
 }

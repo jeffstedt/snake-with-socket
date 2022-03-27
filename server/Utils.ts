@@ -1,5 +1,5 @@
-import { PLAYER_SIZE, CANVAS_SIZE, COLORS } from './Constants'
-import { Model, PlayerDirection, Fruit, ArrowKey, CharacterKey } from '../src/shared-types'
+import { PLAYER_SIZE, CANVAS_SIZE } from './Constants'
+import { Model, PlayerDirection, Fruit, ArrowKey, CharacterKey, COLOR } from '../src/shared-types'
 import { Player } from '../src/shared-types'
 
 const avalaibleDirections: PlayerDirection[] = [
@@ -26,7 +26,7 @@ const createPlayer = (id: string, color: string): Player => ({
 })
 
 const createFruit = (): Fruit => ({
-  color: COLORS.RED,
+  color: COLOR.RED,
   size: PLAYER_SIZE,
   position: { x: randomNum(), y: randomNum() },
 })

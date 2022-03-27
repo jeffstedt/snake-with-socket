@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { socket } from './Api'
-import { Player, Fruit, EVENT, MSG, ServerState, Settings } from './shared-types'
+import { Player, Fruit, EVENT, MSG, ServerState, Settings, COLOR } from './shared-types'
 import Canvas from './Canvas'
+import SelectScreen from './SelectScreen'
 
 type ServerStatus = {
   state: ServerState
@@ -18,13 +19,8 @@ function App() {
     socket.on(MSG.CONNECT, () => {
       setServerStatus({ state: 'Loading', id: socket.id })
 
-      // Try to start the game
-      socket.emit(MSG.INITIALIZE, {
-        id: socket.id,
-        // Color could be a fun input before starting the game
-        color: '#00FF00',
-        position: { x: 250, y: 250 },
-      })
+      // Connect to server
+      socket.emit(MSG.INITIALIZE, { id: socket.id })
 
       // We have handshake, retrieve game settings
       socket.on(MSG.START_UP, ({ state, settings }: { state: ServerState; settings: Settings }) => {
@@ -62,6 +58,11 @@ function App() {
 
   const applicationIsReady = players.length > 0 && fruit && settings
 
+  function startGame(color: COLOR) {
+    // Try to start the game
+    socket.emit(MSG.START_GAME, { id: socket.id, color: color })
+  }
+
   return (
     <div className="App">
       <header className="App-header">
@@ -69,6 +70,8 @@ function App() {
           'Loading...'
         ) : serverStatus.state === 'Disconnected' ? (
           'Disconnected from server'
+        ) : settings && serverStatus.state === 'Select' ? (
+          <SelectScreen settings={settings} startGame={startGame} />
         ) : applicationIsReady && serverStatus.state === 'Playing' ? (
           <div>
             <div>

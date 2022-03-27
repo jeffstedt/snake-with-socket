@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
-import { EVENT, MSG, Player, Model, PlayerDirection } from '../src/shared-types'
+import { EVENT, MSG, Player, Model, PlayerDirection, COLOR } from '../src/shared-types'
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
@@ -12,7 +12,8 @@ let loop = { tick: 0, previousClock: hourTimeMs() }
 let model: Model = defaultModel()
 
 type Msg =
-  | { type: 'Init'; socketId: string; player: Player }
+  | { type: 'Init'; socketId: string }
+  | { type: 'NewGame'; socketId: string; player: Player }
   | { type: 'Playing' }
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
@@ -24,6 +25,9 @@ type Msg =
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
     case 'Init':
+      model = { ...prevModel, state: 'Select' }
+      break
+    case 'NewGame':
       model = {
         ...prevModel,
         state: 'Playing',
@@ -101,12 +105,24 @@ function updateModel(prevModel: Model, msg: Msg) {
 io.sockets.on(MSG.CONNECT, (socket: Socket) => {
   console.info('New connection established:', socket.id)
 
-  socket.on(MSG.INITIALIZE, (player: Player) => {
+  socket.on(MSG.INITIALIZE, () => {
     // Client wants to start a new game
-    updateModel(model, { type: 'Init', socketId: socket.id, player })
+    updateModel(model, { type: 'Init', socketId: socket.id })
 
     // Before starting game, give client game settings
-    io.emit(MSG.START_UP, { state: model.state, settings: { canvasSize: CANVAS_SIZE, cellSize: CELL_SIZE } })
+    io.emit(MSG.START_UP, {
+      state: model.state,
+      settings: {
+        canvasSize: CANVAS_SIZE,
+        cellSize: CELL_SIZE,
+        color: { red: COLOR.RED, green: COLOR.GREEN, blue: COLOR.BLUE, orange: COLOR.ORANGE, purple: COLOR.PURPLE },
+      },
+    })
+  })
+
+  socket.on(MSG.START_GAME, (player: Player) => {
+    // Client wants to start a new game
+    updateModel(model, { type: 'NewGame', socketId: socket.id, player })
 
     if (model.state === 'Playing' && model.players.length === 1) {
       gameLoop()

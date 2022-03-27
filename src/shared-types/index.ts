@@ -8,6 +8,7 @@ export enum MSG {
   'DISCONNECT' = 'disconnect',
   'INITIALIZE' = 'initialize',
   'START_UP' = 'start_up',
+  'START_GAME' = 'start_game',
 }
 
 export enum PlayerDirection {
@@ -29,6 +30,14 @@ export enum CharacterKey {
   'D' = 'D',
   'S' = 'S',
   'A' = 'A',
+}
+
+export enum COLOR {
+  'RED' = '#cc0000',
+  'GREEN' = '#009a3e',
+  'BLUE' = '#3498db',
+  'ORANGE' = '#ff8800',
+  'PURPLE' = '#8e44ad',
 }
 
 // Model
@@ -85,4 +94,11 @@ export type ServerState = 'Loading' | 'Init' | 'Select' | 'Playing' | 'Error' | 
 export interface Settings {
   canvasSize: number
   cellSize: number
+  color: {
+    red: COLOR
+    green: COLOR
+    blue: COLOR
+    orange: COLOR
+    purple: COLOR
+  }
 }
