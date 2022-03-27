@@ -73,8 +73,16 @@ export interface Position {
   y: number
 }
 
+export interface Colors {
+  red: COLOR
+  green: COLOR
+  blue: COLOR
+  orange: COLOR
+  purple: COLOR
+}
+
 export interface Fruit {
-  color: string
+  color: COLOR
   size: number
   position: Position
 }
@@ -95,11 +103,5 @@ export type ServerState = 'Loading' | 'Init' | 'Select' | 'Playing' | 'Error' | 
 export interface Settings {
   canvasSize: number
   cellSize: number
-  color: {
-    red: COLOR
-    green: COLOR
-    blue: COLOR
-    orange: COLOR
-    purple: COLOR
-  }
+  color: Colors
 }

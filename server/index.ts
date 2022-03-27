@@ -106,10 +106,10 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
   console.info('New connection established:', socket.id)
 
   socket.on(MSG.INITIALIZE, () => {
-    // Client wants to start a new game
+    // Client wants to init a new game
     updateModel(model, { type: 'Init', socketId: socket.id })
 
-    // Before starting game, give client game settings
+    // Emit that game is ready
     io.emit(MSG.START_UP, {
       state: model.state,
       settings: {
@@ -132,7 +132,7 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
   })
 
   socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
-    // Client wants to update the positions
+    // Client wants to update the player.direction
     const parsedKeyDown = parseKeyDown(keyDown.toUpperCase())
     if (parsedKeyDown !== 'ILLIGAL_KEY') {
       updateModel(model, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
