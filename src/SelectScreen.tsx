@@ -14,9 +14,8 @@ function SelectScreen({ settings, startGame }: { settings: Settings; startGame: 
 
   const formIsValid = (color || [])?.length > 0 && name.length > 0
 
-  const colorStyle = (newColor: COLOR): React.CSSProperties => ({
-    backgroundColor: newColor || 'grey',
-  })
+
+
 
   const renderColorButton = (colorTuple: [string, COLOR]) => {
     const [colorText, colorValue] = colorTuple
@@ -27,7 +26,7 @@ function SelectScreen({ settings, startGame }: { settings: Settings; startGame: 
           event?.preventDefault()
           setColor(colorValue)
         }}
-        style={colorStyle(colorValue)}
+        style={{backgroundColor: colorValue}}
         className={colorValue === color ? 'active-color' : '' }
       >
         {colorText}
