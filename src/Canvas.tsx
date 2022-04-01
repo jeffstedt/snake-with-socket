@@ -15,11 +15,11 @@ export default function Canvas({ players, fruit, settings }: Props) {
 
   function drawSnake(context: Context, player: Player) {
     const cells = [player.position, ...player.positions]
-    for (let index = 0; index < cells.length; index++) {
-      const cell = cells[index]
+    for (const cell of cells) {
       context.fillStyle = player.color
       context.fillRect(cell.x, cell.y, player.size, player.size)
     }
+
   }
 
   function drawFruit(context: Context, fruit: Fruit) {
@@ -54,10 +54,10 @@ export default function Canvas({ players, fruit, settings }: Props) {
     }
 
     // Draw players
-    for (let index = 0; index < players.length; index++) {
-      const player = players[index]
+    for (const player of players) {
       drawSnake(context, player)
     }
+
   }
 
   useEffect(() => {
