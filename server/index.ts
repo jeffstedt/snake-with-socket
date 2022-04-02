@@ -124,7 +124,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     // Client wants to start a new game
     updateModel(model, { type: 'NewGame', socketId: socket.id, player })
 
-    if (model.state === 'Playing' && model.players.length === 1) {
+    if (model.state === State.Playing && model.players.length === 1) {
       gameLoop()
     } else {
       updateModel(model, { type: 'Loading' })
@@ -147,7 +147,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
 })
 
 function gameLoop() {
-  if (model.state === 'Playing' && model.players.length > 0) {
+  if (model.state === State.Playing && model.players.length > 0) {
     setTimeout(gameLoop, TICK_LENGTH_MS)
   } else {
     updateModel(model, { type: 'Loading' })
