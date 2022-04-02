@@ -157,7 +157,8 @@ function gameLoop() {
   const delta = (nowClock - loop.previousClock) / 1000
 
   // Game updates
-  for (const player of model.players) {
+  for (let index = 0; index < model.players.length; index++) {
+    const player = model.players[index]
     updateModel(model, { type: 'UpdatePlayer', player })
     updateModel(model, { type: 'UpdateFruit', player })
     updateModel(model, { type: 'CheckForCollision', player })
