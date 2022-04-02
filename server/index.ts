@@ -67,7 +67,7 @@ function updateModel(prevModel: Model, msg: Msg) {
           player.id === msg.player.id
             ? {
                 ...player,
-                position: updatePlayerPosition(player, player.direction),
+                position: updatePlayerPosition(player.position, player.direction),
                 positions: updateTailPositions(player, model.fruit),
                 length: updatePoint(player, model.fruit),
               }
