@@ -16,14 +16,16 @@ function App() {
   const [settings, setSettings] = useState<Settings | null>(null)
 
   useEffect(() => {
+
+    // Connected to server
     socket.on(EVENT.CONNECT, () => {
       setServerStatus({ state: State.Loading, id: socket.id })
 
-      // Connect to server
+      // Tell server client is ready
       socket.emit(EVENT.INITIALIZE, { id: socket.id })
 
-      // We have handshake, retrieve game settings
-      socket.on(EVENT.START_UP, ({ state, settings }: { state: State; settings: Settings }) => {
+      // We have handshake, retrieve game settings and go into select screen
+      socket.on(EVENT.SELECT_GAME, ({ state, settings }: { state: State; settings: Settings }) => {
         setServerStatus({ state, id: socket.id })
         setSettings(settings)
       })

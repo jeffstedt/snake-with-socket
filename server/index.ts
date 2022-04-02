@@ -110,7 +110,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     updateModel(model, { type: 'Init', socketId: socket.id })
 
     // Emit that game is ready
-    io.emit(EVENT.START_UP, {
+    io.emit(EVENT.SELECT_GAME, {
       state: model.state,
       settings: {
         canvasSize: CANVAS_SIZE,

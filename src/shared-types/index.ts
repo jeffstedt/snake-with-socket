@@ -2,7 +2,7 @@ export enum EVENT {
   CONNECT = 'connect', // This keyword is socket io magic
   DISCONNECT = 'disconnect',
   INITIALIZE = 'initialize',
-  START_UP = 'start_up',
+  SELECT_GAME = 'select_game',
   START_GAME = 'start_game',
   DIRECTION_UPDATE = 'direction_update',
   GAME_UPDATE = 'game_update',
