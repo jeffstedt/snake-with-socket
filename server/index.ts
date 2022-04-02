@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
-import { EVENT, MSG, Player, Model, PlayerDirection, COLOR } from '../src/shared-types'
+import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shared-types'
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
@@ -25,30 +25,30 @@ type Msg =
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
     case 'Init':
-      model = { ...prevModel, state: 'Select' }
+      model = { ...prevModel, state: State.Select }
       break
     case 'NewGame':
       model = {
         ...prevModel,
-        state: 'Playing',
+        state: State.Playing,
         players: [createPlayer(msg.socketId, msg.player.color, msg.player.name)],
         fruit: createFruit(),
       }
       break
     case 'Playing':
-      model = { ...prevModel, state: 'Playing' }
+      model = { ...prevModel, state: State.Playing }
       break
     case 'Disconnect':
       model = {
         ...prevModel,
-        state: 'Loading',
+        state: State.Loading,
         players: model.players.filter((player) => player.id !== msg.socketId),
       }
       break
     case 'UpdatePlayerDirection':
       model = {
         ...prevModel,
-        state: 'Playing',
+        state: State.Playing,
         players: model.players.map((player) =>
           player.id === msg.playerId
             ? {
@@ -62,12 +62,12 @@ function updateModel(prevModel: Model, msg: Msg) {
     case 'UpdatePlayer':
       model = {
         ...prevModel,
-        state: 'Playing',
+        state: State.Playing,
         players: model.players.map((player) =>
           player.id === msg.player.id
             ? {
                 ...player,
-                position: updatePlayerPosition(player, player.direction),
+                position: updatePlayerPosition(player.position, player.direction),
                 positions: updateTailPositions(player, model.fruit),
                 length: updatePoint(player, model.fruit),
               }
@@ -84,7 +84,7 @@ function updateModel(prevModel: Model, msg: Msg) {
       ) {
         model = {
           ...prevModel,
-          state: 'Playing',
+          state: State.Playing,
           players: [createPlayer(msg.player.id, msg.player.color, msg.player.name)],
           fruit: createFruit(),
         }
@@ -102,29 +102,29 @@ function updateModel(prevModel: Model, msg: Msg) {
 }
 
 // Server Logic
-io.sockets.on(MSG.CONNECT, (socket: Socket) => {
+io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   console.info('New connection established:', socket.id)
 
-  socket.on(MSG.INITIALIZE, () => {
+  socket.on(EVENT.INITIALIZE, () => {
     // Client wants to init a new game
     updateModel(model, { type: 'Init', socketId: socket.id })
 
     // Emit that game is ready
-    io.emit(MSG.START_UP, {
+    io.emit(EVENT.SELECT_GAME, {
       state: model.state,
       settings: {
         canvasSize: CANVAS_SIZE,
         cellSize: CELL_SIZE,
-        color: { red: COLOR.RED, green: COLOR.GREEN, blue: COLOR.BLUE, orange: COLOR.ORANGE, purple: COLOR.PURPLE },
+        color: { red: Color.Red, green: Color.Green, blue: Color.Blue, orange: Color.Orange, purple: Color.Purple },
       },
     })
   })
 
-  socket.on(MSG.START_GAME, (player: Player) => {
+  socket.on(EVENT.START_GAME, (player: Player) => {
     // Client wants to start a new game
     updateModel(model, { type: 'NewGame', socketId: socket.id, player })
 
-    if (model.state === 'Playing' && model.players.length === 1) {
+    if (model.state === State.Playing && model.players.length === 1) {
       gameLoop()
     } else {
       updateModel(model, { type: 'Loading' })
@@ -141,13 +141,13 @@ io.sockets.on(MSG.CONNECT, (socket: Socket) => {
     }
   })
 
-  socket.on(MSG.DISCONNECT, () => {
+  socket.on(EVENT.DISCONNECT, () => {
     updateModel(model, { type: 'Disconnect', socketId: socket.id })
   })
 })
 
 function gameLoop() {
-  if (model.state === 'Playing' && model.players.length > 0) {
+  if (model.state === State.Playing && model.players.length > 0) {
     setTimeout(gameLoop, TICK_LENGTH_MS)
   } else {
     updateModel(model, { type: 'Loading' })
@@ -165,7 +165,7 @@ function gameLoop() {
   }
 
   // Then emit
-  io.emit(EVENT.STATE_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
+  io.emit(EVENT.GAME_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
   console.debug(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
 
   loop.previousClock = nowClock

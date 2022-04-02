@@ -2,7 +2,7 @@ import { Player, Position, PlayerDirection, Fruit } from '../src/shared-types'
 import { CANVAS_SIZE, PLAYER_SIZE } from './Constants'
 import { createFruit } from './Utils'
 
-function updatePoint(player: Player, fruit: Fruit) {
+function updatePoint(player: Player, fruit: Fruit): number {
   if (playerIsFruitPosition(player.position, fruit.position)) {
     return player.length + 1
   } else {
@@ -10,7 +10,7 @@ function updatePoint(player: Player, fruit: Fruit) {
   }
 }
 
-function updateFruit(player: Player, fruit: Fruit) {
+function updateFruit(player: Player, fruit: Fruit): Fruit {
   if (playerIsFruitPosition(player.position, fruit.position)) {
     return createFruit()
   } else {
@@ -22,7 +22,7 @@ function playerIsFruitPosition(playerPosition: Position, fruitPosition: Position
   return playerPosition.x === fruitPosition.x && playerPosition.y === fruitPosition.y
 }
 
-function accountForTeleportation(position: Position) {
+function accountForTeleportation(position: Position): Position {
   if (position.y <= 0 - PLAYER_SIZE) {
     return { ...position, y: CANVAS_SIZE - PLAYER_SIZE }
   } else if (position.y >= CANVAS_SIZE) {
@@ -36,16 +36,16 @@ function accountForTeleportation(position: Position) {
   }
 }
 
-function updatePlayerPosition({ position }: Player, direction: PlayerDirection): Position {
+function updatePlayerPosition(position: Position, direction: PlayerDirection): Position {
   switch (direction) {
-    case PlayerDirection.UP:
-      return { ...accountForTeleportation({ ...position, y: position.y - PLAYER_SIZE }) }
-    case PlayerDirection.DOWN:
-      return { ...accountForTeleportation({ ...position, y: position.y + PLAYER_SIZE }) }
-    case PlayerDirection.LEFT:
-      return { ...accountForTeleportation({ ...position, x: position.x - PLAYER_SIZE }) }
-    case PlayerDirection.RIGHT:
-      return { ...accountForTeleportation({ ...position, x: position.x + PLAYER_SIZE }) }
+    case PlayerDirection.Up:
+      return accountForTeleportation({ ...position, y: position.y - PLAYER_SIZE })
+    case PlayerDirection.Down:
+      return accountForTeleportation({ ...position, y: position.y + PLAYER_SIZE })
+    case PlayerDirection.Left:
+      return accountForTeleportation({ ...position, x: position.x - PLAYER_SIZE })
+    case PlayerDirection.Right:
+      return accountForTeleportation({ ...position, x: position.x + PLAYER_SIZE })
   }
 }
 
@@ -59,14 +59,14 @@ function updateTailPositions(player: Player, fruit: Fruit): Position[] {
 }
 
 function updatePlayerDirection(newDirection: PlayerDirection, currentDirection: PlayerDirection): PlayerDirection {
-  if (newDirection === PlayerDirection.UP && currentDirection !== PlayerDirection.DOWN) {
-    return PlayerDirection.UP
-  } else if (newDirection === PlayerDirection.DOWN && currentDirection !== PlayerDirection.UP) {
-    return PlayerDirection.DOWN
-  } else if (newDirection === PlayerDirection.RIGHT && currentDirection !== PlayerDirection.LEFT) {
-    return PlayerDirection.RIGHT
-  } else if (newDirection === PlayerDirection.LEFT && currentDirection !== PlayerDirection.RIGHT) {
-    return PlayerDirection.LEFT
+  if (newDirection === PlayerDirection.Up && currentDirection !== PlayerDirection.Down) {
+    return PlayerDirection.Up
+  } else if (newDirection === PlayerDirection.Down && currentDirection !== PlayerDirection.Up) {
+    return PlayerDirection.Down
+  } else if (newDirection === PlayerDirection.Right && currentDirection !== PlayerDirection.Left) {
+    return PlayerDirection.Right
+  } else if (newDirection === PlayerDirection.Left && currentDirection !== PlayerDirection.Right) {
+    return PlayerDirection.Left
   } else {
     return currentDirection
   }

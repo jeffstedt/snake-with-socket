@@ -1,47 +1,46 @@
 import React, { useEffect, useState } from 'react'
 import { socket } from './Api'
-import { Player, Fruit, EVENT, MSG, ServerState, Settings, COLOR } from './shared-types'
+import { Player, Fruit, EVENT, State, Settings, Color } from './shared-types'
 import Canvas from './Canvas'
 import SelectScreen from './SelectScreen'
 
 type ServerStatus = {
-  state: ServerState
+  state: State | 'Disconnected'
   id: string | null
 }
 
 function App() {
-  const [serverStatus, setServerStatus] = useState<ServerStatus>({ state: 'Disconnected', id: null })
+  const [serverStatus, setServerStatus] = useState<ServerStatus>({ state: State.Disconnected, id: null })
   const [players, setPlayers] = useState<Player[]>([])
   const [fruit, setFruit] = useState<Fruit | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
 
   useEffect(() => {
-    socket.on(MSG.CONNECT, () => {
-      setServerStatus({ state: 'Loading', id: socket.id })
 
-      // Connect to server
-      socket.emit(MSG.INITIALIZE, { id: socket.id })
+    // Connected to server
+    socket.on(EVENT.CONNECT, () => {
+      setServerStatus({ state: State.Loading, id: socket.id })
 
-      // We have handshake, retrieve game settings
-      socket.on(MSG.START_UP, ({ state, settings }: { state: ServerState; settings: Settings }) => {
-        setServerStatus({ state: state, id: socket.id })
+      // Tell server client is ready
+      socket.emit(EVENT.INITIALIZE, { id: socket.id })
+
+      // We have handshake, retrieve game settings and go into select screen
+      socket.on(EVENT.SELECT_GAME, ({ state, settings }: { state: State; settings: Settings }) => {
+        setServerStatus({ state, id: socket.id })
         setSettings(settings)
       })
 
       // Listen to game updates and save them in our state
-      socket.on(
-        EVENT.STATE_UPDATE,
-        ({ state, players, fruit }: { state: ServerState; players: Player[]; fruit: Fruit }) => {
-          setServerStatus({ state: state, id: socket.id })
-          setPlayers(players)
-          setFruit(fruit)
-        }
-      )
+      socket.on(EVENT.GAME_UPDATE, ({ state, players, fruit }: { state: State; players: Player[]; fruit: Fruit }) => {
+        setServerStatus({ state, id: socket.id })
+        setPlayers(players)
+        setFruit(fruit)
+      })
     })
 
     // If we lose connection with server - reset app
-    socket.on(MSG.DISCONNECT, () => {
-      setServerStatus({ state: 'Disconnected', id: null })
+    socket.on(EVENT.DISCONNECT, () => {
+      setServerStatus({ state: State.Disconnected, id: null })
       setPlayers([])
       setFruit(null)
       setSettings(null)
@@ -56,9 +55,9 @@ function App() {
     })
   }, [])
 
-  function startGame(color: COLOR, nickName: string) {
+  function startGame(color: Color, nickName: string) {
     // Try to start the game
-    socket.emit(MSG.START_GAME, { id: socket.id, color: color, name: nickName })
+    socket.emit(EVENT.START_GAME, { id: socket.id, color: color, name: nickName })
   }
 
   const applicationIsReady = players.length > 0 && fruit && settings
@@ -66,13 +65,13 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        {serverStatus.state === 'Loading' || serverStatus.state === 'Init' ? (
+        {serverStatus.state === State.Loading || serverStatus.state === State.Init ? (
           'Loading...'
-        ) : serverStatus.state === 'Disconnected' ? (
+        ) : serverStatus.state === State.Disconnected ? (
           'Disconnected from server'
-        ) : settings && serverStatus.state === 'Select' ? (
+        ) : settings && serverStatus.state === State.Select ? (
           <SelectScreen settings={settings} startGame={startGame} />
-        ) : applicationIsReady && serverStatus.state === 'Playing' ? (
+        ) : applicationIsReady && serverStatus.state === State.Playing ? (
           <div>
             <div>
               Players active:
