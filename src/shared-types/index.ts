@@ -1,43 +1,49 @@
 export enum EVENT {
-  'DIRECTION_UPDATE' = 'direction_update',
-  'STATE_UPDATE' = 'state_update',
-}
-
-export enum MSG {
-  'CONNECT' = 'connect', // This keyword is socket io magic
-  'DISCONNECT' = 'disconnect',
-  'INITIALIZE' = 'initialize',
-  'START_UP' = 'start_up',
-  'START_GAME' = 'start_game',
+  CONNECT = 'connect', // This keyword is socket io magic
+  DISCONNECT = 'disconnect',
+  INITIALIZE = 'initialize',
+  START_UP = 'start_up',
+  START_GAME = 'start_game',
+  DIRECTION_UPDATE = 'direction_update',
+  GAME_UPDATE = 'game_update',
 }
 
 export enum PlayerDirection {
-  'UP' = 'UP',
-  'RIGHT' = 'RIGHT',
-  'LEFT' = 'LEFT',
-  'DOWN' = 'DOWN',
+  Up = 'UP',
+  Right = 'RIGHT',
+  Left = 'LEFT',
+  Down = 'DOWN',
 }
 
 export enum ArrowKey {
-  'ARROWUP' = 'ARROWUP',
-  'ARROWRIGHT' = 'ARROWRIGHT',
-  'ARROWDOWN' = 'ARROWDOWN',
-  'ARROWLEFT' = 'ARROWLEFT',
+  ArrowUp = 'ARROWUP',
+  ArrowRight = 'ARROWRIGHT',
+  ArrowDown = 'ARROWDOWN',
+  ArrowLeft = 'ARROWLEFT',
 }
 
 export enum CharacterKey {
-  'W' = 'W',
-  'D' = 'D',
-  'S' = 'S',
-  'A' = 'A',
+  W = 'W',
+  D = 'D',
+  S = 'S',
+  A = 'A',
 }
 
-export enum COLOR {
-  'RED' = '#cc0000',
-  'GREEN' = '#009a3e',
-  'BLUE' = '#3498db',
-  'ORANGE' = '#ff8800',
-  'PURPLE' = '#8e44ad',
+export enum Color {
+  Red = '#cc0000',
+  Green = '#009a3e',
+  Blue = '#3498db',
+  Orange = '#ff8800',
+  Purple = '#8e44ad',
+}
+
+export enum State {
+  Loading = 'Loading',
+  Init = 'Init',
+  Playing = 'Playing',
+  Select = 'Select',
+  Error = 'Error',
+  Disconnected = 'Disconnected',
 }
 
 // Model
@@ -49,23 +55,23 @@ export interface Game {
 }
 
 export interface Loading extends Game {
-  state: 'Loading'
+  state: State.Loading
 }
 
 export interface Init extends Game {
-  state: 'Init'
+  state: State.Init
 }
 
 export interface Playing extends Game {
-  state: 'Playing'
+  state: State.Playing
 }
 
 export interface Select extends Game {
-  state: 'Select'
+  state: State.Select
 }
 
 export interface Error extends Game {
-  state: 'Error'
+  state: State.Error
 }
 
 export interface Position {
@@ -74,15 +80,15 @@ export interface Position {
 }
 
 export interface Colors {
-  red: COLOR
-  green: COLOR
-  blue: COLOR
-  orange: COLOR
-  purple: COLOR
+  red: Color
+  green: Color
+  blue: Color
+  orange: Color
+  purple: Color
 }
 
 export interface Fruit {
-  color: COLOR
+  color: Color
   size: number
   position: Position
 }
@@ -90,15 +96,13 @@ export interface Fruit {
 export interface Player {
   id: string
   name: string
-  color: COLOR
+  color: Color
   size: number
   length: number
   position: Position
   positions: Position[]
   direction: PlayerDirection
 }
-
-export type ServerState = 'Loading' | 'Init' | 'Select' | 'Playing' | 'Error' | 'Disconnected'
 
 export interface Settings {
   canvasSize: number

@@ -1,21 +1,21 @@
 import { PLAYER_SIZE, CANVAS_SIZE } from './Constants'
-import { Model, PlayerDirection, Fruit, ArrowKey, CharacterKey, COLOR } from '../src/shared-types'
+import { Model, PlayerDirection, Fruit, ArrowKey, CharacterKey, Color, State } from '../src/shared-types'
 import { Player } from '../src/shared-types'
 
 const avalaibleDirections: PlayerDirection[] = [
-  PlayerDirection.UP,
-  PlayerDirection.RIGHT,
-  PlayerDirection.LEFT,
-  PlayerDirection.DOWN,
+  PlayerDirection.Up,
+  PlayerDirection.Right,
+  PlayerDirection.Left,
+  PlayerDirection.Down,
 ]
 
 const defaultModel = (): Model => ({
-  state: 'Loading',
+  state: State.Loading,
   players: [],
   fruit: createFruit(),
 })
 
-const createPlayer = (id: string, color: COLOR, name: string): Player => ({
+const createPlayer = (id: string, color: Color, name: string): Player => ({
   id,
   name,
   color,
@@ -27,7 +27,7 @@ const createPlayer = (id: string, color: COLOR, name: string): Player => ({
 })
 
 const createFruit = (): Fruit => ({
-  color: COLOR.RED,
+  color: Color.Red,
   size: PLAYER_SIZE,
   position: { x: randomNum(), y: randomNum() },
 })
@@ -41,18 +41,18 @@ function hourTimeMs() {
 
 function parseKeyDown(keyDown: string): PlayerDirection | 'ILLIGAL_KEY' {
   switch (keyDown) {
-    case ArrowKey.ARROWUP:
+    case ArrowKey.ArrowUp:
     case CharacterKey.W:
-      return PlayerDirection.UP
-    case ArrowKey.ARROWDOWN:
+      return PlayerDirection.Up
+    case ArrowKey.ArrowDown:
     case CharacterKey.S:
-      return PlayerDirection.DOWN
-    case ArrowKey.ARROWRIGHT:
+      return PlayerDirection.Down
+    case ArrowKey.ArrowRight:
     case CharacterKey.D:
-      return PlayerDirection.RIGHT
-    case ArrowKey.ARROWLEFT:
+      return PlayerDirection.Right
+    case ArrowKey.ArrowLeft:
     case CharacterKey.A:
-      return PlayerDirection.LEFT
+      return PlayerDirection.Left
     default:
       return 'ILLIGAL_KEY'
   }

@@ -1,14 +1,14 @@
 import React, { useState } from 'react'
-import { Settings, COLOR } from './shared-types'
+import { Settings, Color } from './shared-types'
 
 function SelectScreen({
   settings,
   startGame,
 }: {
   settings: Settings
-  startGame: (color: COLOR, nickName: string) => void
+  startGame: (color: Color, nickName: string) => void
 }) {
-  const [color, setColor] = useState<COLOR | null>(null)
+  const [color, setColor] = useState<Color | null>(null)
   const [name, setName] = useState('')
 
   function initStartGame(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -22,7 +22,7 @@ function SelectScreen({
 
   const formIsValid = color && name.length > 0
 
-  const renderColorButton = (colorTuple: [string, COLOR]) => {
+  const renderColorButton = (colorTuple: [string, Color]) => {
     const [colorText, colorValue] = colorTuple
     return (
       <button
@@ -44,7 +44,7 @@ function SelectScreen({
       <h3>Choose color</h3>
       <div style={{ display: 'flex' }}>
         {Object.entries(settings.color)
-          .filter(([, color]) => color !== COLOR.RED)
+          .filter(([, color]) => color !== Color.Red)
           .map(renderColorButton)}
       </div>
       <h3>Choose nickname</h3>

@@ -38,13 +38,13 @@ function accountForTeleportation(position: Position) {
 
 function updatePlayerPosition({ position }: Player, direction: PlayerDirection): Position {
   switch (direction) {
-    case PlayerDirection.UP:
+    case PlayerDirection.Up:
       return { ...accountForTeleportation({ ...position, y: position.y - PLAYER_SIZE }) }
-    case PlayerDirection.DOWN:
+    case PlayerDirection.Down:
       return { ...accountForTeleportation({ ...position, y: position.y + PLAYER_SIZE }) }
-    case PlayerDirection.LEFT:
+    case PlayerDirection.Left:
       return { ...accountForTeleportation({ ...position, x: position.x - PLAYER_SIZE }) }
-    case PlayerDirection.RIGHT:
+    case PlayerDirection.Right:
       return { ...accountForTeleportation({ ...position, x: position.x + PLAYER_SIZE }) }
   }
 }
@@ -59,14 +59,14 @@ function updateTailPositions(player: Player, fruit: Fruit): Position[] {
 }
 
 function updatePlayerDirection(newDirection: PlayerDirection, currentDirection: PlayerDirection): PlayerDirection {
-  if (newDirection === PlayerDirection.UP && currentDirection !== PlayerDirection.DOWN) {
-    return PlayerDirection.UP
-  } else if (newDirection === PlayerDirection.DOWN && currentDirection !== PlayerDirection.UP) {
-    return PlayerDirection.DOWN
-  } else if (newDirection === PlayerDirection.RIGHT && currentDirection !== PlayerDirection.LEFT) {
-    return PlayerDirection.RIGHT
-  } else if (newDirection === PlayerDirection.LEFT && currentDirection !== PlayerDirection.RIGHT) {
-    return PlayerDirection.LEFT
+  if (newDirection === PlayerDirection.Up && currentDirection !== PlayerDirection.Down) {
+    return PlayerDirection.Up
+  } else if (newDirection === PlayerDirection.Down && currentDirection !== PlayerDirection.Up) {
+    return PlayerDirection.Down
+  } else if (newDirection === PlayerDirection.Right && currentDirection !== PlayerDirection.Left) {
+    return PlayerDirection.Right
+  } else if (newDirection === PlayerDirection.Left && currentDirection !== PlayerDirection.Right) {
+    return PlayerDirection.Left
   } else {
     return currentDirection
   }
