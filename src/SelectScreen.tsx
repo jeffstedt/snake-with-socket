@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import { Settings, Color } from './shared-types'
 
-function SelectScreen({
-  settings,
-  startGame,
-}: {
+interface Props {
   settings: Settings
   startGame: (color: Color, nickName: string) => void
-}) {
+}
+
+function SelectScreen({ settings, startGame }: Props) {
   const [color, setColor] = useState<Color | null>(null)
   const [name, setName] = useState('')
 
@@ -22,8 +21,7 @@ function SelectScreen({
 
   const formIsValid = color && name.length > 0
 
-  const renderColorButton = (colorTuple: [string, Color]) => {
-    const [colorText, colorValue] = colorTuple
+  const renderColorButton = ([colorText, colorValue]: [string, Color]) => {
     return (
       <button
         key={colorValue}

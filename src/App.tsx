@@ -29,14 +29,11 @@ function App() {
       })
 
       // Listen to game updates and save them in our state
-      socket.on(
-        EVENT.GAME_UPDATE,
-        ({ state, players, fruit }: { state: State; players: Player[]; fruit: Fruit }) => {
-          setServerStatus({ state, id: socket.id })
-          setPlayers(players)
-          setFruit(fruit)
-        }
-      )
+      socket.on(EVENT.GAME_UPDATE, ({ state, players, fruit }: { state: State; players: Player[]; fruit: Fruit }) => {
+        setServerStatus({ state, id: socket.id })
+        setPlayers(players)
+        setFruit(fruit)
+      })
     })
 
     // If we lose connection with server - reset app

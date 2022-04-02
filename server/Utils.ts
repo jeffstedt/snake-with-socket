@@ -35,8 +35,8 @@ const createFruit = (): Fruit => ({
 const randomNum = () => Math.floor(Math.random() * 20) * 25
 
 function hourTimeMs() {
-  let time = process.hrtime()
-  return time[0] * 1000 + time[1] / 1000000
+  const [seconds, nanoseconds] = process.hrtime()
+  return seconds * 1000 + nanoseconds / 1000000
 }
 
 function parseKeyDown(keyDown: string): PlayerDirection | 'ILLIGAL_KEY' {
