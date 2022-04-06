@@ -1,7 +1,7 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shared-types'
-import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE } from './Constants'
+import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
 
@@ -116,6 +116,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
         canvasSize: CANVAS_SIZE,
         cellSize: CELL_SIZE,
         color: { red: Color.Red, green: Color.Green, blue: Color.Blue, orange: Color.Orange, purple: Color.Purple },
+        playerNameMaxLength: PLAYER_NAME_MAX_LENGTH,
       },
     })
   })

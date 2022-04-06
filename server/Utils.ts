@@ -1,4 +1,4 @@
-import { PLAYER_SIZE, CANVAS_SIZE } from './Constants'
+import { PLAYER_SIZE, CANVAS_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
 import { Model, PlayerDirection, Fruit, ArrowKey, CharacterKey, Color, State } from '../src/shared-types'
 import { Player } from '../src/shared-types'
 
@@ -35,7 +35,7 @@ const createFruit = (): Fruit => ({
 const randomNum = () => Math.floor(Math.random() * 20) * 25
 
 function formatPlayerName(name: string) {
-  const [firstChar, ...rest] = name.split('')
+  const [firstChar, ...rest] = name.slice(0, PLAYER_NAME_MAX_LENGTH).split('')
   return firstChar.toUpperCase() + rest.join('')
 }
 

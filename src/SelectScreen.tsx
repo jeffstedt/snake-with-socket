@@ -49,6 +49,7 @@ export default function SelectScreen({ settings, startGame }: Props) {
       <input
         className={name.length > 0 ? 'active' : ''}
         type="text"
+        maxLength={settings.playerNameMaxLength}
         onInput={(event) => setName(event.currentTarget.value)}
       />
       <br></br>

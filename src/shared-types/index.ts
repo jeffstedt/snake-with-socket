@@ -108,4 +108,5 @@ export interface Settings {
   canvasSize: number
   cellSize: number
   color: Colors
+  playerNameMaxLength: number
 }
