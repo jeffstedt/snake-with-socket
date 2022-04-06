@@ -6,7 +6,7 @@ interface Props {
   startGame: (color: Color, nickName: string) => void
 }
 
-function SelectScreen({ settings, startGame }: Props) {
+export default function SelectScreen({ settings, startGame }: Props) {
   const [color, setColor] = useState<Color | null>(null)
   const [name, setName] = useState('')
 
@@ -62,5 +62,3 @@ function SelectScreen({ settings, startGame }: Props) {
     </>
   )
 }
-
-export default SelectScreen
