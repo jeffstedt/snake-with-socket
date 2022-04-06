@@ -70,10 +70,10 @@ function App() {
         ) : settings && socketStatus === State.Select ? (
           <SelectScreen settings={settings} startGame={startGame} />
         ) : applicationIsReady ? (
-          <div>
+          <>
             <Leaderboard players={players} socketId={socketId} />
             <Canvas players={players} fruit={fruit} settings={settings} />
-          </div>
+          </>
         ) : (
           `Error: Unexpected state ${socketStatus}`
         )}

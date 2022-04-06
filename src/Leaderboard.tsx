@@ -11,11 +11,12 @@ export default function Leaderboard({ players, socketId }: Props) {
 
   useEffect(() => {
     // Update players[] sort order by score val z-a
-    setScores(players)
+
+    setScores(players.sort((a: Player, z: Player) => z.length - a.length))
   }, [players])
 
   return (
-    <div>
+    <>
       {scores.map((player: Player) => (
         <ul key={player.id} style={{ textAlign: 'left' }}>
           <li>
@@ -25,6 +26,6 @@ export default function Leaderboard({ players, socketId }: Props) {
           <li>Points: {player.length}</li>
         </ul>
       ))}
-    </div>
+    </>
   )
 }

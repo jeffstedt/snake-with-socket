@@ -17,7 +17,7 @@ const defaultModel = (): Model => ({
 
 const createPlayer = (id: string, color: Color, name: string): Player => ({
   id,
-  name,
+  name: formatPlayerName(name),
   color,
   size: PLAYER_SIZE,
   length: 1,
@@ -33,6 +33,11 @@ const createFruit = (): Fruit => ({
 })
 
 const randomNum = () => Math.floor(Math.random() * 20) * 25
+
+function formatPlayerName(name: string) {
+  const [firstChar, ...rest] = name.split('')
+  return firstChar.toUpperCase() + rest.join('')
+}
 
 function hourTimeMs() {
   const [seconds, nanoseconds] = process.hrtime()
@@ -58,4 +63,6 @@ function parseKeyDown(keyDown: string): PlayerDirection | 'ILLIGAL_KEY' {
   }
 }
 
-export { hourTimeMs, createPlayer, randomNum, createFruit, parseKeyDown, defaultModel }
+const botPlayer = createPlayer('0', Color.Purple, 'Bot')
+
+export { hourTimeMs, createPlayer, randomNum, createFruit, parseKeyDown, defaultModel, botPlayer }
