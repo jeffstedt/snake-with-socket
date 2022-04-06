@@ -6,7 +6,7 @@ interface Props {
   startGame: (color: Color, nickName: string) => void
 }
 
-function SelectScreen({ settings, startGame }: Props) {
+export default function SelectScreen({ settings, startGame }: Props) {
   const [color, setColor] = useState<Color | null>(null)
   const [name, setName] = useState('')
 
@@ -49,6 +49,7 @@ function SelectScreen({ settings, startGame }: Props) {
       <input
         className={name.length > 0 ? 'active' : ''}
         type="text"
+        maxLength={settings.playerNameMaxLength}
         onInput={(event) => setName(event.currentTarget.value)}
       />
       <br></br>
@@ -62,5 +63,3 @@ function SelectScreen({ settings, startGame }: Props) {
     </>
   )
 }
-
-export default SelectScreen
