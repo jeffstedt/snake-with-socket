@@ -40,6 +40,7 @@ input {
   opacity: 0.5;
   text-transform: capitalize;
   cursor: pointer;
+  border-radius: 8px;
 }
 
 input {
@@ -72,4 +73,9 @@ button:active {
 .active,
 input:focus {
   opacity: 1;
+}
+
+canvas {
+  box-shadow: -3px 4px 16px 1px rgb(0 0 0 / 25%);
+  border-radius: 8px;
 }
