@@ -62,7 +62,7 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
+
         {socketStatus === State.Loading || socketStatus === State.Init ? (
           'Loading...'
         ) : socketStatus === State.Disconnected ? (
@@ -70,14 +70,14 @@ function App() {
         ) : settings && socketStatus === State.Select ? (
           <SelectScreen settings={settings} startGame={startGame} />
         ) : applicationIsReady ? (
-          <>
+          <div className='Canvas-wrapper'>
             <Leaderboard players={players} socketId={socketId} />
             <Canvas players={players} fruit={fruit} settings={settings} />
-          </>
+          </div>
         ) : (
           `Error: Unexpected state ${socketStatus}`
         )}
-      </header>
+
     </div>
   )
 }
