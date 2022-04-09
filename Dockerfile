@@ -7,6 +7,7 @@ COPY package.json ./
 COPY yarn.lock ./
 
 RUN yarn test
+RUN yarn prettier --check .
 RUN yarn install
 
 # Bundle app source
