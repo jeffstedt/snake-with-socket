@@ -44,6 +44,10 @@ function hourTimeMs() {
   return seconds * 1000 + nanoseconds / 1000000
 }
 
+function getHHMMSSduration(duration: number) {
+  return new Date(Math.floor(duration) * 1000).toISOString().substring(11, 19)
+}
+
 function parseKeyDown(keyDown: string): PlayerDirection | 'ILLIGAL_KEY' {
   switch (keyDown) {
     case ArrowKey.ArrowUp:
@@ -65,4 +69,4 @@ function parseKeyDown(keyDown: string): PlayerDirection | 'ILLIGAL_KEY' {
 
 const botPlayer = createPlayer('0', Color.Purple, 'Bot')
 
-export { hourTimeMs, createPlayer, randomNum, createFruit, parseKeyDown, defaultModel, botPlayer }
+export { hourTimeMs, createPlayer, randomNum, createFruit, parseKeyDown, defaultModel, getHHMMSSduration, botPlayer }

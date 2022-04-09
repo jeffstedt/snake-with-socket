@@ -2,8 +2,18 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shared-types'
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
-import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown } from './Utils'
+import {
+  defaultModel,
+  hourTimeMs,
+  createPlayer,
+  createFruit,
+  parseKeyDown,
+  getHHMMSSduration,
+  botPlayer,
+} from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
+
+process.title = 'SnakeIOGame'
 
 const httpServer = createServer()
 const io = new Server(httpServer)
@@ -25,13 +35,13 @@ type Msg =
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
     case 'Init':
-      model = { ...prevModel, state: State.Select }
+      model = { ...defaultModel(), state: State.Select }
       break
     case 'NewGame':
       model = {
         ...prevModel,
         state: State.Playing,
-        players: [createPlayer(msg.socketId, msg.player.color, msg.player.name)],
+        players: [botPlayer, createPlayer(msg.socketId, msg.player.color, msg.player.name)],
         fruit: createFruit(),
       }
       break
@@ -142,6 +152,10 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     }
   })
 
+  socket.on(EVENT.EXIT_GAME, () => {
+    updateModel(model, { type: 'Init', socketId: socket.id })
+  })
+
   socket.on(EVENT.DISCONNECT, () => {
     updateModel(model, { type: 'Disconnect', socketId: socket.id })
   })
@@ -167,7 +181,21 @@ function gameLoop() {
 
   // Then emit
   io.emit(EVENT.GAME_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
-  console.debug(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
+
+  console.debug(
+    JSON.stringify(
+      {
+        delta,
+        tick: loop.tick,
+        cpu: process.cpuUsage(),
+        upTime: getHHMMSSduration(process.uptime()),
+        pid: process.pid,
+        model,
+      },
+      null,
+      2
+    )
+  )
 
   loop.previousClock = nowClock
   loop.tick++

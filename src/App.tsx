@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { socket } from './Api'
 import { Player, Fruit, EVENT, State, Settings, Color } from './shared-types'
 import Canvas from './Canvas'
@@ -54,8 +54,12 @@ function App() {
   }, [])
 
   function startGame(color: Color, nickName: string) {
-    // Try to start the game
     socket.emit(EVENT.START_GAME, { id: socket.id, color: color, name: nickName })
+  }
+
+  function exitGame(event: React.MouseEvent<HTMLElement>) {
+    event.preventDefault()
+    socket.emit(EVENT.EXIT_GAME)
   }
 
   const applicationIsReady = socketStatus === State.Playing && socketId && players.length > 0 && fruit && settings
@@ -69,8 +73,11 @@ function App() {
       ) : settings && socketStatus === State.Select ? (
         <SelectScreen settings={settings} startGame={startGame} />
       ) : applicationIsReady ? (
-        <div className="Canvas-wrapper">
-          <Leaderboard players={players} socketId={socketId} />
+        <div className="Ui-wrapper">
+          <div className="Sidebar-wrapper">
+            <Leaderboard players={players} socketId={socketId} />
+            <button onClick={exitGame}>Exit game</button>
+          </div>
           <Canvas players={players} fruit={fruit} settings={settings} />
         </div>
       ) : (

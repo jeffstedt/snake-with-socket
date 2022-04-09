@@ -1,5 +1,13 @@
+$color-white: #ffffff;
+$color-black: #000000;
+$color-black-light: #282c34;
+$color-dark-transparent-hard: rgba(0, 0, 0, 0.85);
+$color-dark-transparent-light: rgba(0, 0, 0, 0.25);
+$border-radius: 8px;
+$theme-unit: 1rem;
+
 body {
-  background-color: #282c34;
+  background-color: $color-black-light;
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
     'Droid Sans', 'Helvetica Neue', sans-serif;
@@ -20,25 +28,25 @@ code {
   min-height: 100vh;
   justify-content: center;
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: $color-white;
 }
 
 button,
 input {
   font-size: 1.5rem;
   font-weight: 600;
-  background-color: white;
-  color: #000;
-  border: 3px solid rgba(0, 0, 0, 0.85);
+  background-color: $color-white;
+  color: $color-black;
+  border: 3px solid $color-dark-transparent-hard;
   padding: 10px 30px;
   font-family: Courier;
-  box-shadow: -3px 4px 0px 0px rgba(0, 0, 0, 0.85);
+  box-shadow: -3px 4px 0px 0px $color-dark-transparent-hard;
   transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
-  margin: 1rem;
+  margin: $theme-unit;
   opacity: 0.5;
   text-transform: capitalize;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: $border-radius;
 }
 
 input {
@@ -49,22 +57,22 @@ button:hover,
 button:focus,
 .active-color {
   transform: translateY(2px);
-  box-shadow: 0px 0px 0px 0px rgba(0, 0, 0, 0.85);
+  box-shadow: 0px 0px 0px 0px $color-dark-transparent-hard;
   opacity: 1;
 }
 
 button:active {
-  color: white;
+  color: $color-white;
 }
 
 .active-color {
-  color: white;
+  color: $color-white;
   cursor: default;
 }
 
 .inactive-submit:hover {
   transform: none;
-  box-shadow: -3px 4px 0px 0px rgba(0, 0, 0, 0.85);
+  box-shadow: -3px 4px 0px 0px $color-dark-transparent-hard;
   opacity: 0.5;
 }
 
@@ -73,27 +81,38 @@ input:focus {
   opacity: 1;
 }
 
-.Canvas-wrapper {
+.Ui-wrapper {
   display: flex;
   flex-direction: row-reverse;
-  gap: 1rem;
+  gap: $theme-unit;
 }
 
 canvas {
-  box-shadow: -3px 4px 16px 1px rgb(0 0 0 / 25%);
-  border-radius: 8px;
+  box-shadow: -3px 4px 16px 1px $color-dark-transparent-light;
+  border-radius: $border-radius;
 }
 
-.leaderboard {
-  min-width: 250px;
-  background-color: rgba(0, 0, 0, 0.25);
-  color: #ffffff;
+.Sidebar-wrapper {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: $theme-unit;
+  button {
+    margin: 0px;
+    font-size: 1.25rem;
+  }
+}
+
+.Leaderboard {
+  height: 100%;
+  background-color: $color-dark-transparent-light;
+  color: $color-white;
   text-align: left;
   font-size: 14px;
-  border-radius: 8px;
+  border-radius: $border-radius;
   overflow: hidden;
   .row {
-    padding: 1rem;
+    padding: $theme-unit;
     display: flex;
     justify-content: space-between;
   }
