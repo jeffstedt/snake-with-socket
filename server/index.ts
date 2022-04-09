@@ -2,8 +2,18 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shared-types'
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
-import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, botPlayer } from './Utils'
+import {
+  defaultModel,
+  hourTimeMs,
+  createPlayer,
+  createFruit,
+  parseKeyDown,
+  getHHMMSSduration,
+  botPlayer,
+} from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
+
+process.title = 'SnakeIOGame'
 
 const httpServer = createServer()
 const io = new Server(httpServer)
@@ -171,7 +181,21 @@ function gameLoop() {
 
   // Then emit
   io.emit(EVENT.GAME_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
-  console.debug(JSON.stringify({ delta, tick: loop.tick, model }, null, 2))
+
+  console.debug(
+    JSON.stringify(
+      {
+        delta,
+        tick: loop.tick,
+        cpu: process.cpuUsage(),
+        upTime: getHHMMSSduration(process.uptime()),
+        pid: process.pid,
+        model,
+      },
+      null,
+      2
+    )
+  )
 
   loop.previousClock = nowClock
   loop.tick++
