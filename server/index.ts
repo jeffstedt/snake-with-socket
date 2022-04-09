@@ -2,7 +2,7 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shared-types'
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
-import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown } from './Utils'
+import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, botPlayer } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
 
 const httpServer = createServer()
@@ -31,7 +31,7 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = {
         ...prevModel,
         state: State.Playing,
-        players: [createPlayer(msg.socketId, msg.player.color, msg.player.name)],
+        players: [botPlayer, createPlayer(msg.socketId, msg.player.color, msg.player.name)],
         fruit: createFruit(),
       }
       break

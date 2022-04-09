@@ -38,7 +38,9 @@ docker run -p 3000:3000 -p 3001:3001 snake-with-socket
   - [x] Eat fruit
   - [x] Gain length / earn point
   - [x] Snake self-collision
-- [x] Make it possible to input custom snake color and player nickname
+- [x] Menu: Make it possible to input custom snake color and player nickname
+- [x] Leaderboard: Show ranked players
+- [x] Add Exit Game button
 - [ ] Bug: Make is impossible for fruit to spawn at Snake position
 - [ ] Unit tests for core game features
   - [ ] Continues movement
