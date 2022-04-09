@@ -53,11 +53,7 @@ export default function SelectScreen({ settings, startGame }: Props) {
         onInput={(event) => setName(event.currentTarget.value)}
       />
       <br></br>
-      <button
-        disabled={!formIsValid}
-        className={formIsValid ? 'active' : 'inactive-submit'}
-        onClick={initStartGame}
-      >
+      <button disabled={!formIsValid} className={formIsValid ? 'active' : 'inactive-submit'} onClick={initStartGame}>
         Start game
       </button>
     </>
