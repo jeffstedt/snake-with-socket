@@ -6,6 +6,7 @@ export enum EVENT {
   START_GAME = 'start_game',
   DIRECTION_UPDATE = 'direction_update',
   GAME_UPDATE = 'game_update',
+  EXIT_GAME = 'exit_game',
 }
 
 export enum PlayerDirection {

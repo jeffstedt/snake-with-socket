@@ -7,7 +7,7 @@ interface Props {
 
 export default function Leaderboard({ players, socketId }: Props) {
   return (
-    <div className="leaderboard">
+    <div className="Leaderboard">
       {[...players]
         .sort((a: Player, z: Player) => z.length - a.length)
         .map((player: Player, index: number) => (

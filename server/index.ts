@@ -25,7 +25,7 @@ type Msg =
 function updateModel(prevModel: Model, msg: Msg) {
   switch (msg.type) {
     case 'Init':
-      model = { ...prevModel, state: State.Select }
+      model = { ...defaultModel(), state: State.Select }
       break
     case 'NewGame':
       model = {
@@ -140,6 +140,10 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     } else {
       console.info('Illigal key')
     }
+  })
+
+  socket.on(EVENT.EXIT_GAME, () => {
+    updateModel(model, { type: 'Init', socketId: socket.id })
   })
 
   socket.on(EVENT.DISCONNECT, () => {

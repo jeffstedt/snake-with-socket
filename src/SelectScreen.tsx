@@ -11,7 +11,7 @@ export default function SelectScreen({ settings, startGame }: Props) {
   const [name, setName] = useState('')
 
   function initStartGame(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    event?.preventDefault()
+    event.preventDefault()
     if (formIsValid) {
       startGame(color, name)
     } else {
@@ -56,7 +56,7 @@ export default function SelectScreen({ settings, startGame }: Props) {
       <button
         disabled={!formIsValid}
         className={formIsValid ? 'active' : 'inactive-submit'}
-        onClick={(event) => initStartGame(event)}
+        onClick={initStartGame}
       >
         Start game
       </button>
