@@ -12,11 +12,15 @@ function updatePoint(player: Player, fruit: Fruit): number {
 
 function updateFruit(player: Player, fruit: Fruit): Fruit {
   if (playerIsFruitPosition(player.position, fruit.position)) {
-    let tempFruit = createFruit()
-    while (fruitIsPlayerPosition(tempFruit.position, [player.position, ...player.positions])) {
-      tempFruit = createFruit()
-    }
-    return tempFruit
+    return callbackUpdateFruit(createFruit(), player)
+  } else {
+    return fruit
+  }
+}
+
+function callbackUpdateFruit(fruit: Fruit, player: Player) {
+  if (fruitIsPlayerPosition(fruit.position, [player.position, ...player.positions])) {
+    return updateFruit(player, fruit)
   } else {
     return fruit
   }
