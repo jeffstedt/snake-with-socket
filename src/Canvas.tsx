@@ -13,10 +13,16 @@ export default function Canvas({ players, fruit, settings }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const { canvasSize, cellSize } = settings
 
-  function drawSnake(context: Context, player: Player) {
-    const cells = [player.position, ...player.positions]
+  function drawSnakeHead(context: Context, player: Player) {
+    context.fillStyle = player.color
+    context.fillRect(player.position.x, player.position.y, player.size, player.size)
+  }
+
+  function drawSnakeTails(context: Context, player: Player) {
+    const cells = player.positions
     for (let index = 0; index < cells.length; index++) {
       const cell = cells[index]
+      context.globalAlpha = 0.75
       context.fillStyle = player.color
       context.fillRect(cell.x, cell.y, player.size, player.size)
     }
@@ -31,6 +37,7 @@ export default function Canvas({ players, fruit, settings }: Props) {
 
   function draw(context: Context) {
     // Draw play board
+    context.globalAlpha = 1
     context.fillStyle = '#1a1a1c'
     context.fillRect(0, 0, context.canvas.width, context.canvas.height)
 
@@ -56,7 +63,8 @@ export default function Canvas({ players, fruit, settings }: Props) {
     // Draw players
     for (let index = 0; index < players.length; index++) {
       const player = players[index]
-      drawSnake(context, player)
+      drawSnakeHead(context, player)
+      drawSnakeTails(context, player)
     }
   }
 

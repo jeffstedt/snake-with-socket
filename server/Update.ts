@@ -19,10 +19,10 @@ function updateFruit(player: Player, fruit: Fruit): Fruit {
 }
 
 function callbackUpdateFruit(fruit: Fruit, player: Player) {
-  if (fruitIsPlayerPosition(fruit.position, [player.position, ...player.positions])) {
-    return updateFruit(player, fruit)
-  } else {
+  if (!fruitIsPlayerPosition(fruit.position, [player.position, ...player.positions])) {
     return fruit
+  } else {
+    return updateFruit(player, fruit)
   }
 }
 

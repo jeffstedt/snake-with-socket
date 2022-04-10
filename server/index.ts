@@ -9,9 +9,8 @@ process.title = 'SnakeIOGame'
 
 const httpServer = createServer()
 const io = new Server(httpServer)
-const debug = false
 
-let loop = { tick: 0, previousClock: hourTimeMs() }
+let loop = { tick: 0, previousClock: hourTimeMs(), debug: true }
 let model: Model = defaultModel()
 
 type Msg =
@@ -140,7 +139,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     if (parsedKeyDown !== 'ILLIGAL_KEY') {
       updateModel(model, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
     } else {
-      console.info('Illigal key')
+      loop.debug && console.info('Illigal key')
     }
   })
 
@@ -173,7 +172,7 @@ function gameLoop() {
   // Then emit
   io.emit(EVENT.GAME_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
 
-  if (debug) {
+  if (loop.debug) {
     console.debug(
       JSON.stringify(
         {
@@ -182,7 +181,7 @@ function gameLoop() {
           cpu: process.cpuUsage(),
           upTime: getHHMMSSduration(process.uptime()),
           pid: process.pid,
-          model,
+          // model,
         },
         null,
         2

@@ -41,11 +41,18 @@ docker run -p 3000:3000 -p 3001:3001 snake-with-socket
 - [x] Menu: Make it possible to input custom snake color and player nickname
 - [x] Leaderboard: Show ranked players
 - [x] Add Exit Game button
-- [ ] Bug: Make is impossible for fruit to spawn at Snake position
+- [x] Bug: Make it impossible for fruit to spawn at Snake position
+- [ ] Bug: Make it impossible for snake to change same-axis direction
+- [ ] Bug: On colission - end game before Snake travels to tail position
+- [ ] Make Snake multiplayer work
+  - [ ] Game lobby / unique game rooms
+  - [ ] Game lobby ready functionality
+  - [ ] Start on ready with count down timer
+  - [ ] Player(s) collision
+  - [ ] On collision - respawn in same game
 - [ ] Unit tests for core game features
   - [ ] Continues movement
   - [ ] Teleportation
   - [ ] Gain length / earn point
   - [ ] Self collision
   - [ ] Snake.position[] logic
-- [ ] Snake multiplayer?
