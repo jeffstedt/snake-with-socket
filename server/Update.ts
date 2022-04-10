@@ -18,7 +18,7 @@ function updateFruit(player: Player, fruit: Fruit): Fruit {
   }
 }
 
-function callbackUpdateFruit(fruit: Fruit, player: Player) {
+function callbackUpdateFruit(fruit: Fruit, player: Player): Fruit {
   if (!fruitIsPlayerPosition(fruit.position, [player.position, ...player.positions])) {
     return fruit
   } else {
@@ -26,13 +26,11 @@ function callbackUpdateFruit(fruit: Fruit, player: Player) {
   }
 }
 
-function fruitIsPlayerPosition(fruitPosition: Position, playerPositions: Position[]) {
-  return playerPositions.some(
-    (playerPosition) => playerPosition.x === fruitPosition.x && playerPosition.y === fruitPosition.y
-  )
+function fruitIsPlayerPosition(fruitPosition: Position, playerPositions: Position[]): boolean {
+  return playerPositions.some((playerPosition) => playerIsFruitPosition(playerPosition, fruitPosition))
 }
 
-function playerIsFruitPosition(playerPosition: Position, fruitPosition: Position) {
+function playerIsFruitPosition(playerPosition: Position, fruitPosition: Position): boolean {
   return playerPosition.x === fruitPosition.x && playerPosition.y === fruitPosition.y
 }
 
