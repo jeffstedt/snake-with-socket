@@ -26,8 +26,10 @@ function callbackUpdateFruit(fruit: Fruit, player: Player) {
   }
 }
 
-function fruitIsPlayerPosition(fruitPosition: Position, playerPosition: Position[]) {
-  return playerPosition.some((playerPos) => playerPos.x === fruitPosition.x && playerPos.y === fruitPosition.y)
+function fruitIsPlayerPosition(fruitPosition: Position, playerPositions: Position[]) {
+  return playerPositions.some(
+    (playerPosition) => playerPosition.x === fruitPosition.x && playerPosition.y === fruitPosition.y
+  )
 }
 
 function playerIsFruitPosition(playerPosition: Position, fruitPosition: Position) {
