@@ -2,15 +2,7 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shared-types'
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
-import {
-  defaultModel,
-  hourTimeMs,
-  createPlayer,
-  createFruit,
-  parseKeyDown,
-  getHHMMSSduration,
-  botPlayer,
-} from './Utils'
+import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, getHHMMSSduration } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
 
 process.title = 'SnakeIOGame'
@@ -18,7 +10,7 @@ process.title = 'SnakeIOGame'
 const httpServer = createServer()
 const io = new Server(httpServer)
 
-let loop = { tick: 0, previousClock: hourTimeMs() }
+let loop = { tick: 0, previousClock: hourTimeMs(), debug: true }
 let model: Model = defaultModel()
 
 type Msg =
@@ -29,7 +21,6 @@ type Msg =
   | { type: 'Disconnect'; socketId: string }
   | { type: 'UpdatePlayerDirection'; playerId: string; direction: PlayerDirection }
   | { type: 'UpdatePlayer'; player: Player }
-  | { type: 'UpdateFruit'; player: Player }
   | { type: 'CheckForCollision'; player: Player }
 
 function updateModel(prevModel: Model, msg: Msg) {
@@ -41,7 +32,7 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = {
         ...prevModel,
         state: State.Playing,
-        players: [botPlayer, createPlayer(msg.socketId, msg.player.color, msg.player.name)],
+        players: [createPlayer(msg.socketId, msg.player.color, msg.player.name)],
         fruit: createFruit(),
       }
       break
@@ -148,7 +139,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     if (parsedKeyDown !== 'ILLIGAL_KEY') {
       updateModel(model, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
     } else {
-      console.info('Illigal key')
+      loop.debug && console.info('Illigal key')
     }
   })
 
@@ -175,27 +166,28 @@ function gameLoop() {
   for (let index = 0; index < model.players.length; index++) {
     const player = model.players[index]
     updateModel(model, { type: 'UpdatePlayer', player })
-    updateModel(model, { type: 'UpdateFruit', player })
     updateModel(model, { type: 'CheckForCollision', player })
   }
 
   // Then emit
   io.emit(EVENT.GAME_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
 
-  console.debug(
-    JSON.stringify(
-      {
-        delta,
-        tick: loop.tick,
-        cpu: process.cpuUsage(),
-        upTime: getHHMMSSduration(process.uptime()),
-        pid: process.pid,
-        model,
-      },
-      null,
-      2
+  if (loop.debug) {
+    console.debug(
+      JSON.stringify(
+        {
+          delta,
+          tick: loop.tick,
+          cpu: process.cpuUsage(),
+          upTime: getHHMMSSduration(process.uptime()),
+          pid: process.pid,
+          // model,
+        },
+        null,
+        2
+      )
     )
-  )
+  }
 
   loop.previousClock = nowClock
   loop.tick++

@@ -12,13 +12,25 @@ function updatePoint(player: Player, fruit: Fruit): number {
 
 function updateFruit(player: Player, fruit: Fruit): Fruit {
   if (playerIsFruitPosition(player.position, fruit.position)) {
-    return createFruit()
+    return callbackUpdateFruit(createFruit(), player)
   } else {
     return fruit
   }
 }
 
-function playerIsFruitPosition(playerPosition: Position, fruitPosition: Position) {
+function callbackUpdateFruit(fruit: Fruit, player: Player): Fruit {
+  if (!fruitIsPlayerPosition(fruit.position, [player.position, ...player.positions])) {
+    return fruit
+  } else {
+    return updateFruit(player, fruit)
+  }
+}
+
+function fruitIsPlayerPosition(fruitPosition: Position, playerPositions: Position[]): boolean {
+  return playerPositions.some((playerPosition) => playerIsFruitPosition(playerPosition, fruitPosition))
+}
+
+function playerIsFruitPosition(playerPosition: Position, fruitPosition: Position): boolean {
   return playerPosition.x === fruitPosition.x && playerPosition.y === fruitPosition.y
 }
 

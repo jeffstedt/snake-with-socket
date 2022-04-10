@@ -1,7 +1,7 @@
 const SERVER_PORT = 3001
 
-const TICK_RATE = 10
-const TICK_LENGTH_MS = 1000 / TICK_RATE // -> 100ms -> 10 fps
+const TICK_RATE = 15
+const TICK_LENGTH_MS = 1000 / TICK_RATE // -> 66ms -> 15 fps
 
 const AREA = 20
 const CANVAS_SIZE = 500
