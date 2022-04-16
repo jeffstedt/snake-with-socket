@@ -7,19 +7,19 @@ interface Props {
 }
 
 export default function SelectScreen({ settings, startGame }: Props) {
-  const [color, setColor] = useState<Color | null>(null)
-  const [name, setName] = useState('')
+  const [colorInput, setColorInput] = useState<Color | null>(null)
+  const [nameInput, setNameInput] = useState('')
 
   function initStartGame(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     event.preventDefault()
     if (formIsValid) {
-      startGame(color, name)
+      startGame(colorInput, nameInput)
     } else {
       throw new Error('Error: Tried to start game without required inputs')
     }
   }
 
-  const formIsValid = color && name.length > 0
+  const formIsValid = colorInput && nameInput.length > 0
 
   const renderColorButton = ([colorText, colorValue]: [string, Color]) => {
     return (
@@ -27,10 +27,10 @@ export default function SelectScreen({ settings, startGame }: Props) {
         key={colorValue}
         onClick={(event) => {
           event?.preventDefault()
-          setColor(colorValue)
+          setColorInput(colorValue)
         }}
         style={{ backgroundColor: colorValue }}
-        className={colorValue === color ? 'active-color' : ''}
+        className={colorValue === colorInput ? 'active-color' : ''}
       >
         {colorText}
       </button>
@@ -47,10 +47,10 @@ export default function SelectScreen({ settings, startGame }: Props) {
       </div>
       <h3>Choose nickname</h3>
       <input
-        className={name.length > 0 ? 'active' : ''}
+        className={nameInput.length > 0 ? 'active' : ''}
         type="text"
         maxLength={settings.playerNameMaxLength}
-        onInput={(event) => setName(event.currentTarget.value)}
+        onInput={(event) => setNameInput(event.currentTarget.value)}
       />
       <br></br>
       <button disabled={!formIsValid} className={formIsValid ? 'active' : 'inactive-submit'} onClick={initStartGame}>
