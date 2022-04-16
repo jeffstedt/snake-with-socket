@@ -4,6 +4,7 @@ import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shar
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, getHHMMSSduration } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
+import { v4 as uuidv4 } from 'uuid'
 
 process.title = 'SnakeIOGame'
 
@@ -32,7 +33,7 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = {
         ...prevModel,
         state: State.Playing,
-        players: [createPlayer(msg.socketId, msg.player.color, msg.player.name)],
+        players: prevModel.players.concat(createPlayer(msg.socketId, msg.player.color, msg.player.name)),
         fruit: createFruit(),
       }
       break
@@ -106,13 +107,15 @@ function updateModel(prevModel: Model, msg: Msg) {
 io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   console.info('New connection established:', socket.id)
 
-  socket.on(EVENT.INITIALIZE, () => {
+  socket.on(EVENT.INITIALIZE, ({ playerId, roomId }: { playerId: string; roomId: string | null }) => {
     // Client wants to init a new game
     updateModel(model, { type: 'Init', socketId: socket.id })
 
     // Emit that game is ready
     io.emit(EVENT.SELECT_GAME, {
       state: model.state,
+      // Should probably more like: if findRoomId || createNewRoom(uuidv4())
+      roomId: roomId || [].length > 0 || uuidv4().substring(0, 6),
       settings: {
         canvasSize: CANVAS_SIZE,
         cellSize: CELL_SIZE,
@@ -181,7 +184,7 @@ function gameLoop() {
           cpu: process.cpuUsage(),
           upTime: getHHMMSSduration(process.uptime()),
           pid: process.pid,
-          // model,
+          model,
         },
         null,
         2

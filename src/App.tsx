@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { socket } from './Api'
 import { Player, Fruit, EVENT, State, Settings, Color } from './shared-types'
 import Canvas from './Canvas'
@@ -11,6 +12,10 @@ function App() {
   const [players, setPlayers] = useState<Player[]>([])
   const [fruit, setFruit] = useState<Fruit | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
+  const [roomId, setRoomId] = useState<string | null>(useParams().id || null)
+
+  const navigate = useNavigate()
+  useEffect(() => navigate(`/${roomId}`), [roomId, navigate])
 
   useEffect(() => {
     // Connected to server
@@ -18,14 +23,17 @@ function App() {
       setSocketStatus(State.Loading)
       setSocektId(socket.id)
 
-      // Tell server client is ready
-      socket.emit(EVENT.INITIALIZE, { id: socket.id })
+      socket.emit(EVENT.INITIALIZE, { id: socket.id, roomId: roomId })
 
       // We have handshake, retrieve game settings and go into select screen
-      socket.on(EVENT.SELECT_GAME, ({ state, settings }: { state: State; settings: Settings }) => {
-        setSocketStatus(state)
-        setSettings(settings)
-      })
+      socket.on(
+        EVENT.SELECT_GAME,
+        ({ state, roomId, settings }: { state: State; roomId: string; settings: Settings }) => {
+          setSocketStatus(state)
+          setSettings(settings)
+          setRoomId(roomId)
+        }
+      )
 
       // Listen to game updates and save them in our state
       socket.on(EVENT.GAME_UPDATE, ({ state, players, fruit }: { state: State; players: Player[]; fruit: Fruit }) => {
@@ -66,7 +74,9 @@ function App() {
 
   return (
     <div className="App">
-      {socketStatus === State.Loading || socketStatus === State.Init ? (
+      {!roomId ? (
+        'Connecting...'
+      ) : socketStatus === State.Loading || socketStatus === State.Init ? (
         'Loading...'
       ) : socketStatus === State.Disconnected ? (
         'Disconnected from server'
