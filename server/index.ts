@@ -43,14 +43,14 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = {
         ...prevModel,
         state: State.Loading,
-        players: model.players.filter((player) => player.id !== msg.socketId),
+        players: prevModel.players.filter((player) => player.id !== msg.socketId),
       }
       break
     case 'UpdatePlayerDirection':
       model = {
         ...prevModel,
         state: State.Playing,
-        players: model.players.map((player) =>
+        players: prevModel.players.map((player) =>
           player.id === msg.playerId
             ? {
                 ...player,
@@ -64,17 +64,17 @@ function updateModel(prevModel: Model, msg: Msg) {
       model = {
         ...prevModel,
         state: State.Playing,
-        players: model.players.map((player) =>
+        players: prevModel.players.map((player) =>
           player.id === msg.player.id
             ? {
                 ...player,
                 position: updatePlayerPosition(player.position, player.direction),
-                positions: updateTailPositions(player, model.fruit),
-                length: updatePoint(player, model.fruit),
+                positions: updateTailPositions(player, prevModel.fruit),
+                length: updatePoint(player, prevModel.fruit),
               }
             : player
         ),
-        fruit: updateFruit(msg.player, model.fruit),
+        fruit: updateFruit(msg.player, prevModel.fruit),
       }
       break
     case 'CheckForCollision':
