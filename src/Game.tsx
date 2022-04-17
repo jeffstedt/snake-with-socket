@@ -1,7 +1,16 @@
 import Canvas from './Canvas'
 import Leaderboard from './Leaderboard'
+import { Player, Fruit, Settings } from './shared-types'
 
-function Game({ socketId, players, fruit, settings, exitGame }: any) {
+interface Props {
+  socketId: string
+  players: Player[]
+  fruit: Fruit
+  settings: Settings
+  exitGame: () => void
+}
+
+function Game({ socketId, players, fruit, settings, exitGame }: Props) {
   function initExitGame(event: React.MouseEvent<HTMLElement>) {
     event.preventDefault()
     exitGame()
