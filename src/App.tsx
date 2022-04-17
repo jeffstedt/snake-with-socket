@@ -2,9 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { socket } from './Api'
 import { Player, Fruit, EVENT, State, Settings, Color } from './shared-types'
-import Canvas from './Canvas'
 import SelectScreen from './SelectScreen'
-import Leaderboard from './Leaderboard'
+import Game from './Game'
 
 function App() {
   const [socketStatus, setSocketStatus] = useState<State | 'Disconnected'>(State.Disconnected)
@@ -65,8 +64,7 @@ function App() {
     socket.emit(EVENT.START_GAME, { id: socket.id, color: color, name: nickName })
   }
 
-  function exitGame(event: React.MouseEvent<HTMLElement>) {
-    event.preventDefault()
+  function exitGame() {
     socket.emit(EVENT.EXIT_GAME)
   }
 
@@ -83,13 +81,7 @@ function App() {
       ) : settings && socketStatus === State.Select ? (
         <SelectScreen settings={settings} startGame={startGame} />
       ) : applicationIsReady ? (
-        <div className="Ui-wrapper">
-          <div className="Sidebar-wrapper">
-            <Leaderboard players={players} socketId={socketId} />
-            <button onClick={exitGame}>Exit game</button>
-          </div>
-          <Canvas players={players} fruit={fruit} settings={settings} />
-        </div>
+        <Game socketId={socketId} players={players} fruit={fruit} settings={settings} exitGame={exitGame} />
       ) : (
         `Error: Unexpected state ${socketStatus}`
       )}
