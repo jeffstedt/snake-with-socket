@@ -4,6 +4,7 @@ import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shar
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, getHHMMSSduration } from './Utils'
 import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
+import { serialize } from 'bson'
 
 process.title = 'SnakeIOGame'
 
@@ -170,7 +171,7 @@ function gameLoop() {
   }
 
   // Then emit
-  io.emit(EVENT.GAME_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
+  io.emit(EVENT.GAME_UPDATE, serialize({ state: model.state, players: model.players, fruit: model.fruit }))
 
   if (loop.debug) {
     console.debug(

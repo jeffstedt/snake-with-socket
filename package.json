@@ -43,6 +43,7 @@
     ]
   },
   "devDependencies": {
+    "bson": "^4.6.2",
     "http": "^0.0.1-security",
     "prettier": "^2.6.2",
     "socket.io": "^4.4.1",
