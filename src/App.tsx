@@ -4,6 +4,7 @@ import { Player, Fruit, EVENT, State, Settings, Color } from './shared-types'
 import Canvas from './Canvas'
 import SelectScreen from './SelectScreen'
 import Leaderboard from './Leaderboard'
+import { deserialize } from 'bson'
 
 function App() {
   const [socketStatus, setSocketStatus] = useState<State | 'Disconnected'>(State.Disconnected)
@@ -28,7 +29,8 @@ function App() {
       })
 
       // Listen to game updates and save them in our state
-      socket.on(EVENT.GAME_UPDATE, ({ state, players, fruit }: { state: State; players: Player[]; fruit: Fruit }) => {
+      socket.on(EVENT.GAME_UPDATE, (payload: Buffer) => {
+        const { state, players, fruit } = deserialize(payload)
         setSocketStatus(state)
         setPlayers(players)
         setFruit(fruit)
