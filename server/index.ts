@@ -16,6 +16,7 @@ let model: Model = defaultModel()
 
 type Msg =
   | { type: 'Init'; socketId: string }
+  | { type: 'NewPlayer'; socketId: string; roomId: string; player: Player }
   | { type: 'NewGame'; socketId: string; player: Player }
   | { type: 'Playing' }
   | { type: 'Loading' }
@@ -29,11 +30,20 @@ function updateModel(prevModel: Model, msg: Msg) {
     case 'Init':
       model = { ...defaultModel(), state: State.Select }
       break
+    case 'NewPlayer':
+      model = {
+        ...prevModel,
+        state: State.WaitingRoom,
+        players: prevModel.players.concat(createPlayer(msg.socketId, msg.roomId, msg.player.color, msg.player.name)),
+      }
+      break
     case 'NewGame':
       model = {
         ...prevModel,
         state: State.Playing,
-        players: prevModel.players.concat(createPlayer(msg.socketId, msg.player.color, msg.player.name)),
+        // players: prevModel.players.concat(
+        //   createPlayer(msg.socketId, msg.player.roomId, msg.player.color, msg.player.name)
+        // ),
         fruit: createFruit(),
       }
       break
@@ -87,7 +97,7 @@ function updateModel(prevModel: Model, msg: Msg) {
         model = {
           ...prevModel,
           state: State.Playing,
-          players: [createPlayer(msg.player.id, msg.player.color, msg.player.name)],
+          players: [createPlayer(msg.player.id, msg.player.roomId, msg.player.color, msg.player.name)],
           fruit: createFruit(),
         }
       } else {
@@ -107,6 +117,12 @@ function updateModel(prevModel: Model, msg: Msg) {
 io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   console.info('New connection established:', socket.id)
 
+  socket.on(EVENT.CREATE_ROOM, (player: Player) => {
+    const newRoomId = uuidv4().substring(0, 6)
+    updateModel(model, { type: 'NewPlayer', socketId: socket.id, roomId: newRoomId, player: player })
+    io.emit(EVENT.CREATE_ROOM, { state: model.state, roomId: newRoomId, players: model.players })
+  })
+
   socket.on(EVENT.INITIALIZE, ({ playerId, roomId }: { playerId: string; roomId: string | null }) => {
     // Client wants to init a new game
     updateModel(model, { type: 'Init', socketId: socket.id })
@@ -115,7 +131,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     io.emit(EVENT.SELECT_GAME, {
       state: model.state,
       // Should probably more like: if findRoomId(roomId) || createNewRoom(uuidv4())
-      roomId: roomId || [].length > 0 || uuidv4().substring(0, 6),
+      roomId: roomId || [].length > 0 || '',
       settings: {
         canvasSize: CANVAS_SIZE,
         cellSize: CELL_SIZE,

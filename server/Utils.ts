@@ -15,8 +15,9 @@ const defaultModel = (): Model => ({
   fruit: createFruit(),
 })
 
-const createPlayer = (id: string, color: Color, name: string): Player => ({
+const createPlayer = (id: string, roomId: string, color: Color, name: string): Player => ({
   id,
+  roomId,
   name: formatPlayerName(name),
   color,
   size: PLAYER_SIZE,
@@ -67,6 +68,6 @@ function parseKeyDown(keyDown: string): PlayerDirection | 'ILLIGAL_KEY' {
   }
 }
 
-const botPlayer = createPlayer('0', Color.Purple, 'Bot')
+const botPlayer = createPlayer('0', '0', Color.Purple, 'Bot')
 
 export { hourTimeMs, createPlayer, randomNum, createFruit, parseKeyDown, defaultModel, getHHMMSSduration, botPlayer }

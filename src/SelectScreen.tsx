@@ -1,25 +1,48 @@
-import React, { useState } from 'react'
+import React, { useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Settings, Color } from './shared-types'
 
-interface Props {
-  settings: Settings
-  startGame: (color: Color, nickName: string) => void
+export interface Input {
+  color: Color | null
+  name: string
 }
 
-export default function SelectScreen({ settings, startGame }: Props) {
-  const [colorInput, setColorInput] = useState<Color | null>(null)
-  const [nameInput, setNameInput] = useState('')
+interface Props {
+  input: Input
+  setInput: React.Dispatch<React.SetStateAction<Input>>
+  settings: Settings | null
+  roomId: string | null
+  startGame?: (color: Color, name: string) => void
+  joinRoom?: (roomId: string) => void
+  createRoom?: (color: Color, name: string) => void
+}
+
+export default function SelectScreen({ input, setInput, settings, roomId, startGame, joinRoom, createRoom }: Props) {
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (roomId !== null) navigate(`/${roomId}`)
+  }, [roomId, navigate])
 
   function initStartGame(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     event.preventDefault()
-    if (formIsValid) {
-      startGame(colorInput, nameInput)
+    if (startGame && formIsValid && input.color) {
+      startGame(input.color, input.name)
     } else {
       throw new Error('Error: Tried to start game without required inputs')
     }
   }
 
-  const formIsValid = colorInput && nameInput.length > 0
+  function initCreateRoom(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    event.preventDefault()
+    if (createRoom && formIsValid && input.color) {
+      createRoom(input.color, input.name)
+    } else {
+      throw new Error('Error: Tried to start game without required inputs')
+    }
+  }
+
+  const formIsValid = input.color && input.name.length > 0
 
   const renderColorButton = ([colorText, colorValue]: [string, Color]) => {
     return (
@@ -27,14 +50,18 @@ export default function SelectScreen({ settings, startGame }: Props) {
         key={colorValue}
         onClick={(event) => {
           event?.preventDefault()
-          setColorInput(colorValue)
+          setInput({ ...input, color: colorValue })
         }}
         style={{ backgroundColor: colorValue }}
-        className={colorValue === colorInput ? 'active-color' : ''}
+        className={colorValue === input.color ? 'active-color' : ''}
       >
         {colorText}
       </button>
     )
+  }
+
+  if (!settings) {
+    return <div>Could not fetch settings</div>
   }
 
   return (
@@ -47,15 +74,37 @@ export default function SelectScreen({ settings, startGame }: Props) {
       </div>
       <h3>Choose nickname</h3>
       <input
-        className={nameInput.length > 0 ? 'active' : ''}
+        className={input.name.length > 0 ? 'active' : ''}
         type="text"
         maxLength={settings.playerNameMaxLength}
-        onInput={(event) => setNameInput(event.currentTarget.value)}
+        onInput={(event) => setInput({ ...input, name: event.currentTarget.value })}
       />
       <br></br>
-      <button disabled={!formIsValid} className={formIsValid ? 'active' : 'inactive-submit'} onClick={initStartGame}>
-        Start game
-      </button>
+      <div style={{ display: 'flex' }}>
+        {joinRoom && (
+          <button
+            disabled={!formIsValid}
+            className={formIsValid ? 'active' : 'inactive-submit'}
+            onClick={() => joinRoom('')}
+          >
+            Join game
+          </button>
+        )}
+        {createRoom && (
+          <button
+            disabled={!formIsValid}
+            className={formIsValid ? 'active' : 'inactive-submit'}
+            onClick={initCreateRoom}
+          >
+            Create game
+          </button>
+        )}
+      </div>
+      {startGame && (
+        <button disabled={!formIsValid} className={formIsValid ? 'active' : 'inactive-submit'} onClick={initStartGame}>
+          Ready
+        </button>
+      )}
     </>
   )
 }

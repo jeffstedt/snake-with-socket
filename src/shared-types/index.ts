@@ -2,6 +2,8 @@ export enum EVENT {
   CONNECT = 'connect', // This keyword is socket io magic
   DISCONNECT = 'disconnect',
   INITIALIZE = 'initialize',
+  JOIN_ROOM = 'join_room',
+  CREATE_ROOM = 'create_room',
   SELECT_GAME = 'select_game',
   START_GAME = 'start_game',
   DIRECTION_UPDATE = 'direction_update',
@@ -43,12 +45,13 @@ export enum State {
   Init = 'Init',
   Playing = 'Playing',
   Select = 'Select',
+  WaitingRoom = 'WaitingRoom',
   Error = 'Error',
   Disconnected = 'Disconnected',
 }
 
 // Model
-export type Model = Loading | Init | Select | Playing | Error
+export type Model = Loading | Init | Select | WaitingRoom | Playing | Error
 
 export interface Game {
   players: Player[]
@@ -69,6 +72,10 @@ export interface Playing extends Game {
 
 export interface Select extends Game {
   state: State.Select
+}
+
+export interface WaitingRoom extends Game {
+  state: State.WaitingRoom
 }
 
 export interface Error extends Game {
@@ -96,6 +103,7 @@ export interface Fruit {
 
 export interface Player {
   id: string
+  roomId: string
   name: string
   color: Color
   size: number

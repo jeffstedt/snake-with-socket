@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
-import { useLocation, useParams, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { socket } from './Api'
 import { Player, Fruit, EVENT, State, Settings, Color } from './shared-types'
-import SelectScreen from './SelectScreen'
-import Game from './Game'
+import SelectScreen, { Input } from './SelectScreen'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import GameRoom from './GameRoom'
 
 function App() {
   const [socketStatus, setSocketStatus] = useState<State | 'Disconnected'>(State.Disconnected)
@@ -12,12 +13,11 @@ function App() {
   const [fruit, setFruit] = useState<Fruit | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [roomId, setRoomId] = useState<string | null>(useParams().id || null)
-
-  const navigate = useNavigate()
-  useEffect(() => navigate(`/${roomId}`), [roomId, navigate])
+  const [input, setInput] = useState<Input>({ color: null, name: '' })
 
   useEffect(() => {
     // Connected to server
+
     socket.on(EVENT.CONNECT, () => {
       setSocketStatus(State.Loading)
       setSocektId(socket.id)
@@ -42,6 +42,13 @@ function App() {
       })
     })
 
+    // Server assignes us a room
+    socket.on(EVENT.CREATE_ROOM, ({ state, roomId, players }) => {
+      setSocketStatus(state)
+      setRoomId(roomId)
+      setPlayers(players)
+    })
+
     // If we lose connection with server - reset app
     socket.on(EVENT.DISCONNECT, () => {
       setSocketStatus(State.Disconnected)
@@ -60,31 +67,52 @@ function App() {
     })
   }, [])
 
-  function startGame(color: Color, nickName: string) {
-    socket.emit(EVENT.START_GAME, { id: socket.id, color: color, name: nickName })
+  function startGame(color: Color, name: string) {
+    socket.emit(EVENT.START_GAME, { id: socket.id, color: color, name: name })
   }
 
-  function exitGame() {
-    socket.emit(EVENT.EXIT_GAME)
+  function createRoom(color: Color, name: string) {
+    socket.emit(EVENT.CREATE_ROOM, { id: socket.id, color: color, name: name })
   }
 
-  const applicationIsReady = socketStatus === State.Playing && socketId && players.length > 0 && fruit && settings
+  function joinRoom(roomId: string) {
+    socket.emit(EVENT.JOIN_ROOM, { roomId })
+  }
 
   return (
     <div className="App">
-      {!roomId ? (
-        'Connecting...'
-      ) : socketStatus === State.Loading || socketStatus === State.Init ? (
-        'Loading...'
-      ) : socketStatus === State.Disconnected ? (
-        'Disconnected from server'
-      ) : settings && socketStatus === State.Select ? (
-        <SelectScreen settings={settings} startGame={startGame} />
-      ) : applicationIsReady ? (
-        <Game socketId={socketId} players={players} fruit={fruit} settings={settings} exitGame={exitGame} />
-      ) : (
-        `Error: Unexpected state ${socketStatus}`
-      )}
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <SelectScreen
+                input={input}
+                setInput={setInput}
+                settings={settings}
+                roomId={roomId}
+                createRoom={createRoom}
+                joinRoom={joinRoom}
+              />
+            }
+          />
+          <Route
+            path="/:id"
+            element={
+              <GameRoom
+                socketId={socketId}
+                socketStatus={socketStatus}
+                players={players}
+                fruit={fruit}
+                settings={settings}
+                startGame={startGame}
+                input={input}
+                setInput={setInput}
+              />
+            }
+          />
+        </Routes>
+      </BrowserRouter>
     </div>
   )
 }
