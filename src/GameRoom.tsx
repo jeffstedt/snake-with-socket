@@ -33,6 +33,12 @@ function GameRoom({ socketStatus, socketId, players, fruit, settings, startGame,
     <SelectScreen settings={settings} roomId={currentRoomId} startGame={startGame} input={input} setInput={setInput} />
   ) : socketStatus === State.WaitingRoom ? (
     <div className="Sidebar-wrapper">
+      {/*
+      Todo: Instead of reusing Leaderboard - Create a custom component:
+      1. Player1    X
+      2. Player1    Ready
+      etc..
+      */}
       <Leaderboard players={players} socketId={socketId || ''} />
       <button onClick={() => startGame(input.color || Color.Blue, input.name)}>Ready</button>
     </div>
