@@ -36,8 +36,8 @@ function GameRoom({ input, setInput, socketStatus, socketId, players, fruit, set
     <div className="Sidebar-wrapper">
       {/*
       Todo: Instead of reusing Leaderboard - Create a custom component:
-      1. Player1    X
-      2. Player1    Ready
+      1. Player1          X
+      2. Player2 (You)    Ready
       etc..
       */}
       <Leaderboard players={players} socketId={socketId} />

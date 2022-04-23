@@ -53,11 +53,11 @@ export enum State {
 // Model
 export type Model = Loading | Init | Select | WaitingRoom | Playing | Error
 
-// Todo: In a multiplayer mode, the model probably needs to look more like this..
+// Todo: In a multiplayer mode, the model probably needs needs support multiprocessing like this..
 // export type Model = Room[]
 // type Room = Loading | Init | Select | WaitingRoom | Playing | Error
 // But then, the gameloop sort of always needs to run.
-// Either that, or we need to spin up new server instances (multiprocessing) for each unique room
+// Either that, or we need to spin up new server instances for each unique room with the current model
 
 export interface Game {
   players: Player[]
