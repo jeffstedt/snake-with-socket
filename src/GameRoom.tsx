@@ -1,22 +1,23 @@
 import { socket } from './Api'
-import { Player, Fruit, EVENT, State, Settings, Color } from './shared-types'
+import { Player, Fruit, EVENT, State, Settings, Input } from './shared-types'
 import Game from './Game'
 import { useParams } from 'react-router-dom'
-import SelectScreen, { Input } from './SelectScreen'
+import SelectScreen from './SelectScreen'
 import Leaderboard from './Leaderboard'
 
 interface Props {
+  input: Input
+  setInput: React.Dispatch<React.SetStateAction<Input>>
   socketStatus: State | 'Disconnected'
   socketId: string | null
   players: Player[]
   fruit: Fruit | null
   settings: Settings | null
-  startGame: (color: Color, name: string) => void
-  input: Input
-  setInput: React.Dispatch<React.SetStateAction<Input>>
+  ready: (playerId: string, roomId: string) => void
+  joinRoom?: (roomId: string, input: Input) => void
 }
 
-function GameRoom({ socketStatus, socketId, players, fruit, settings, startGame, input, setInput }: Props) {
+function GameRoom({ input, setInput, socketStatus, socketId, players, fruit, settings, joinRoom, ready }: Props) {
   const currentRoomId = useParams().id || ''
 
   function exitGame() {
@@ -30,8 +31,8 @@ function GameRoom({ socketStatus, socketId, players, fruit, settings, startGame,
   ) : socketStatus === State.Disconnected ? (
     <div>Disconnected from server</div>
   ) : settings && socketStatus === State.Select ? (
-    <SelectScreen settings={settings} roomId={currentRoomId} startGame={startGame} input={input} setInput={setInput} />
-  ) : socketStatus === State.WaitingRoom ? (
+    <SelectScreen settings={settings} roomId={currentRoomId} joinRoom={joinRoom} input={input} setInput={setInput} />
+  ) : socketId && currentRoomId && socketStatus === State.WaitingRoom ? (
     <div className="Sidebar-wrapper">
       {/*
       Todo: Instead of reusing Leaderboard - Create a custom component:
@@ -39,8 +40,8 @@ function GameRoom({ socketStatus, socketId, players, fruit, settings, startGame,
       2. Player1    Ready
       etc..
       */}
-      <Leaderboard players={players} socketId={socketId || ''} />
-      <button onClick={() => startGame(input.color || Color.Blue, input.name)}>Ready</button>
+      <Leaderboard players={players} socketId={socketId} />
+      <button onClick={() => ready(socketId, currentRoomId)}>Ready</button>
     </div>
   ) : isConnectedToServer && fruit ? (
     <Game socketId={socketId} players={players} fruit={fruit} settings={settings} exitGame={exitGame} />

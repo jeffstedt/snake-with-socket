@@ -1,23 +1,19 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Settings, Color } from './shared-types'
+import { Settings, Color, Input } from './shared-types'
 
-export interface Input {
-  color: Color | null
-  name: string
-}
 
 interface Props {
-  input: Input
-  setInput: React.Dispatch<React.SetStateAction<Input>>
   settings: Settings | null
   roomId: string | null
-  startGame?: (color: Color, name: string) => void
-  joinRoom?: (roomId: string) => void
-  createRoom?: (color: Color, name: string) => void
+  input: Input
+  setInput: React.Dispatch<React.SetStateAction<Input>>
+  startGame?: (input: Input) => void
+  joinRoom?: (roomId: string, input: Input) => void
+  createRoom?: (input: Input) => void
 }
 
-export default function SelectScreen({ input, setInput, settings, roomId, startGame, joinRoom, createRoom }: Props) {
+export default function SelectScreen({ settings, roomId, input, setInput, startGame, joinRoom, createRoom }: Props) {
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -26,8 +22,8 @@ export default function SelectScreen({ input, setInput, settings, roomId, startG
 
   function initStartGame(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     event.preventDefault()
-    if (startGame && formIsValid && input.color) {
-      startGame(input.color, input.name)
+    if (startGame && formIsValid) {
+      startGame(input)
     } else {
       throw new Error('Error: Tried to start game without required inputs')
     }
@@ -35,8 +31,17 @@ export default function SelectScreen({ input, setInput, settings, roomId, startG
 
   function initCreateRoom(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     event.preventDefault()
-    if (createRoom && formIsValid && input.color) {
-      createRoom(input.color, input.name)
+    if (createRoom && formIsValid) {
+      createRoom(input)
+    } else {
+      throw new Error('Error: Tried to start game without required inputs')
+    }
+  }
+
+  function initJoinRoom(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    event.preventDefault()
+    if (joinRoom && formIsValid && roomId) {
+      joinRoom(roomId, input)
     } else {
       throw new Error('Error: Tried to start game without required inputs')
     }
@@ -85,7 +90,7 @@ export default function SelectScreen({ input, setInput, settings, roomId, startG
           <button
             disabled={!formIsValid}
             className={formIsValid ? 'active' : 'inactive-submit'}
-            onClick={() => joinRoom('')}
+            onClick={initJoinRoom}
           >
             Join game
           </button>
