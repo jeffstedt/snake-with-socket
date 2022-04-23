@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Settings, Color, Input } from './shared-types'
 
-
 interface Props {
   settings: Settings | null
   roomId: string | null
@@ -87,11 +86,7 @@ export default function SelectScreen({ settings, roomId, input, setInput, startG
       <br></br>
       <div style={{ display: 'flex' }}>
         {joinRoom && (
-          <button
-            disabled={!formIsValid}
-            className={formIsValid ? 'active' : 'inactive-submit'}
-            onClick={initJoinRoom}
-          >
+          <button disabled={!formIsValid} className={formIsValid ? 'active' : 'inactive-submit'} onClick={initJoinRoom}>
             Join game
           </button>
         )}
