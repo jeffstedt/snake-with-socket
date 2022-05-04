@@ -5,6 +5,7 @@ $color-dark-transparent-hard: rgba(0, 0, 0, 0.85);
 $color-dark-transparent-light: rgba(0, 0, 0, 0.25);
 $border-radius: 8px;
 $theme-unit: 1rem;
+$none: 0px;
 
 body {
   background-color: $color-black-light;
@@ -40,7 +41,7 @@ input {
   border: 3px solid $color-dark-transparent-hard;
   padding: 10px 30px;
   font-family: Courier;
-  box-shadow: -3px 4px 0px 0px $color-dark-transparent-hard;
+  box-shadow: -3px 4px $none $none $color-dark-transparent-hard;
   transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
   margin: $theme-unit;
   opacity: 0.5;
@@ -50,13 +51,13 @@ input {
 }
 
 input {
-  margin: 0px;
+  margin: $none;
   cursor: initial;
   box-shadow: none;
 }
 
 button {
-  margin: 0px;
+  margin: $none;
   font-size: 1.25rem;
   &:disabled {
     cursor: initial;
@@ -64,14 +65,14 @@ button {
 }
 
 h3 {
-  margin: 0px;
+  margin: $none;
 }
 
 button:hover,
 button:focus,
 .active-color {
   transform: translateY(2px);
-  box-shadow: 0px 0px 0px 0px $color-dark-transparent-hard;
+  box-shadow: $none $none $none $none $color-dark-transparent-hard;
   opacity: 1;
 }
 
@@ -82,7 +83,7 @@ button:focus,
 
 .inactive-submit:hover {
   transform: none;
-  box-shadow: -3px 4px 0px 0px $color-dark-transparent-hard;
+  box-shadow: -3px 4px $none $none $color-dark-transparent-hard;
   opacity: 0.5;
 }
 
@@ -118,7 +119,7 @@ canvas {
     flex-wrap: wrap;
     gap: $theme-unit;
     button {
-      margin: 0px;
+      margin: $none;
       font-size: 1.25rem;
       flex: 0 0 calc(50% - $theme-unit / 2);
     }
@@ -177,7 +178,7 @@ canvas {
   padding: $theme-unit;
   position: relative;
   p {
-    margin: 0px;
+    margin: $none;
   }
 }
 
@@ -196,14 +197,14 @@ canvas {
     opacity: 0;
   }
   to {
-    bottom: 0rem;
+    bottom: $none;
     opacity: 1;
   }
 }
 
 @keyframes fadeout {
   from {
-    bottom: 0rem;
+    bottom: $none;
     opacity: 1;
   }
   to {
