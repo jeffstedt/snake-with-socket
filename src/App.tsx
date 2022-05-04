@@ -84,7 +84,7 @@ function App() {
   function acceptedKeys(key: string) {
     const acceptedArrowKeys = [ArrowKey.ArrowUp, ArrowKey.ArrowLeft, ArrowKey.ArrowRight, ArrowKey.ArrowUp]
     const acceptedCharacterKeys = [CharacterKey.W, CharacterKey.A, CharacterKey.S, CharacterKey.D]
-    return [...acceptedArrowKeys, ...acceptedCharacterKeys].map(enum_ => enum_.toString()).includes(key)
+    return [...acceptedArrowKeys, ...acceptedCharacterKeys].map(toString).includes(key)
   }
 
   const defaultColor = Color.Blue
