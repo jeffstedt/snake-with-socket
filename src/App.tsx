@@ -115,6 +115,7 @@ function App() {
 
   return (
     <div className="App">
+      <h1>-Snake logo-</h1>
       {socketStatus === State.Loading || socketStatus === State.Init ? (
         <div>Loading...</div>
       ) : socketStatus === State.Disconnected ? (
@@ -131,7 +132,6 @@ function App() {
                   settings={settings}
                   roomId={roomId}
                   createRoom={createRoom}
-                  joinRoom={joinRoom}
                 />
               }
             />
