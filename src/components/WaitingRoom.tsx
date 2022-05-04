@@ -38,7 +38,8 @@ function WaitingRoom({ socketId, settings, players, ready }: Props) {
       </div>
       <div className="Sidebar-wrapper">
         <button onClick={() => ready(socketId, currentRoomId)}>Ready</button>
-        <button onClick={copyUrlToClipboard}>Invite friends</button>
+        {}
+        <button onClick={!snackbar.show ? copyUrlToClipboard : undefined}>Invite friends</button>
         {
           <div className={snackbarClasses}>
             <p>
