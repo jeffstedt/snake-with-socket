@@ -60,18 +60,22 @@ export default function SelectScreen({ input, setInput, settings, roomId, joinRo
   return (
     <div className="Ui-wrapper">
       <div className="Input-wrapper">
-        <h3>Nickname</h3>
-        <input
-          className={input.name.length > 0 ? 'active' : ''}
-          type="text"
-          maxLength={settings.playerNameMaxLength}
-          onInput={(event) => setInput({ ...input, name: event.currentTarget.value })}
-        />
-        <h3>Snake color</h3>
-        <div className="Colors-wrapper">
-          {Object.entries(settings.color)
-            .filter(([, color]) => color !== Color.Red)
-            .map(renderColorButton)}
+        <div className="Input-section-wrapper">
+          <h3>Nickname</h3>
+          <input
+            className={input.name.length > 0 ? 'active' : ''}
+            type="text"
+            maxLength={settings.playerNameMaxLength}
+            onInput={(event) => setInput({ ...input, name: event.currentTarget.value })}
+          />
+        </div>
+        <div className="Input-section-wrapper">
+          <h3>Snake color</h3>
+          <div className="Colors-wrapper">
+            {Object.entries(settings.color)
+              .filter(([, color]) => color !== Color.Red)
+              .map(renderColorButton)}
+          </div>
         </div>
         <div className="Buttons-wrapper">
           {joinRoom && (
