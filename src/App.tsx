@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { socket } from './Api'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import SelectScreen from './SelectScreen'
-import Game from './Game'
-import WaitingRoom from './WaitingRoom'
+import SelectScreen from 'components/SelectScreen'
+import Game from 'components/Game'
+import WaitingRoom from 'components/WaitingRoom'
 
 import {
   Player,
@@ -16,7 +16,7 @@ import {
   CreateRoomInput,
   Color,
   ReadyInput,
-} from './shared-types'
+} from 'shared-types'
 
 function App() {
   const [socketStatus, setSocketStatus] = useState<State | 'Disconnected'>(State.Disconnected)
@@ -77,7 +77,7 @@ function App() {
         keyDown: event.key,
       })
     })
-  }, [])
+  }, [roomId])
 
   const defaultColor = Color.Blue
 

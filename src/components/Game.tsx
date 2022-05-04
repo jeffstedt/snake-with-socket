@@ -1,6 +1,6 @@
 import Canvas from './Canvas'
 import Leaderboard from './Leaderboard'
-import { Player, Fruit, Settings } from './shared-types'
+import { Player, Fruit, Settings } from 'shared-types'
 
 interface Props {
   socketId: string

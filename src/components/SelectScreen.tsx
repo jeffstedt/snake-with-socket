@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Settings, Color, Input } from './shared-types'
+import { Settings, Color, Input } from 'shared-types'
 import { useParams } from 'react-router-dom'
 
 interface Props {

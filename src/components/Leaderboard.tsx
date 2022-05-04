@@ -1,5 +1,6 @@
-import { Player } from './shared-types'
+import { Player } from 'shared-types'
 import hexRgb from 'hex-rgb'
+
 interface Props {
   players: Player[]
   socketId: string

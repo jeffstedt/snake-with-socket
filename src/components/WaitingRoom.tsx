@@ -1,5 +1,5 @@
 import Leaderboard from './Leaderboard'
-import { Player, Settings } from './shared-types'
+import { Player, Settings } from 'shared-types'
 import { useParams } from 'react-router-dom'
 
 interface Props {
