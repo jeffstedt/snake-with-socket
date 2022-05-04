@@ -5,7 +5,7 @@ import { Player, Fruit, Settings } from './shared-types'
 interface Props {
   socketId: string
   players: Player[]
-  fruit: Fruit
+  fruit: Fruit | null
   settings: Settings
   exitGame: () => void
 }

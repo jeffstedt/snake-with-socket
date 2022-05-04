@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Settings, Color, Input } from './shared-types'
+import { useParams } from 'react-router-dom'
 
 interface Props {
-  settings: Settings | null
-  roomId: string | null
+  settings: Settings
+  roomId?: string
   input: Input
   setInput: React.Dispatch<React.SetStateAction<Input>>
   startGame?: (input: Input) => void
@@ -14,10 +15,12 @@ interface Props {
 
 export default function SelectScreen({ settings, roomId, input, setInput, startGame, joinRoom, createRoom }: Props) {
   const navigate = useNavigate()
+  const paramId = useParams().id
+  const currentRoomId = roomId || paramId
 
   useEffect(() => {
-    if (roomId !== null) navigate(`/${roomId}`)
-  }, [roomId, navigate])
+    if (currentRoomId) navigate(`/${currentRoomId}`)
+  }, [currentRoomId, navigate])
 
   function initStartGame(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     event.preventDefault()
@@ -39,8 +42,8 @@ export default function SelectScreen({ settings, roomId, input, setInput, startG
 
   function initJoinRoom(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     event.preventDefault()
-    if (joinRoom && formIsValid && roomId) {
-      joinRoom(roomId, input)
+    if (joinRoom && formIsValid && currentRoomId) {
+      joinRoom(currentRoomId, input)
     } else {
       throw new Error('Error: Tried to start game without required inputs')
     }
@@ -62,10 +65,6 @@ export default function SelectScreen({ settings, roomId, input, setInput, startG
         {colorText}
       </button>
     )
-  }
-
-  if (!settings) {
-    return <div>Could not fetch settings</div>
   }
 
   return (

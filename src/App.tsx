@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import { socket } from './Api'
-import SelectScreen from './SelectScreen'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import GameRoom from './GameRoom'
+import SelectScreen from './SelectScreen'
+import Game from './Game'
+import WaitingRoom from './WaitingRoom'
 
 import {
   Player,
@@ -24,7 +24,7 @@ function App() {
   const [players, setPlayers] = useState<Player[]>([])
   const [fruit, setFruit] = useState<Fruit | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
-  const [roomId, setRoomId] = useState<string | null>(useParams().id || null)
+  const [roomId, setRoomId] = useState<string | undefined>(undefined)
   const [input, setInput] = useState<Input>({ color: null, name: '' })
 
   useEffect(() => {
@@ -96,41 +96,55 @@ function App() {
     socket.emit(EVENT.READY, payload)
   }
 
+  function exitGame() {
+    socket.emit(EVENT.EXIT_GAME)
+  }
+
+  const clientHasServerConfigs = socketId && settings
+  const isConnectedToServer =
+    socketStatus === State.Playing || socketStatus === State.Select || socketStatus === State.WaitingRoom
+
   return (
     <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <SelectScreen
-                input={input}
-                setInput={setInput}
-                settings={settings}
-                roomId={roomId}
-                createRoom={createRoom}
-                joinRoom={joinRoom}
-              />
-            }
-          />
-          <Route
-            path="/:id"
-            element={
-              <GameRoom
-                input={input}
-                setInput={setInput}
-                socketId={socketId}
-                socketStatus={socketStatus}
-                players={players}
-                fruit={fruit}
-                settings={settings}
-                joinRoom={joinRoom}
-                ready={ready}
-              />
-            }
-          />
-        </Routes>
-      </BrowserRouter>
+      {socketStatus === State.Loading || socketStatus === State.Init ? (
+        <div>Loading...</div>
+      ) : socketStatus === State.Disconnected ? (
+        <div>Disconnected from server</div>
+      ) : isConnectedToServer && clientHasServerConfigs ? (
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <SelectScreen
+                  input={input}
+                  roomId={roomId}
+                  setInput={setInput}
+                  settings={settings}
+                  createRoom={createRoom}
+                  joinRoom={joinRoom}
+                />
+              }
+            />
+            <Route
+              path="/:id"
+              element={
+                socketStatus === State.Select ? (
+                  <SelectScreen settings={settings} joinRoom={joinRoom} input={input} setInput={setInput} />
+                ) : socketStatus === State.WaitingRoom ? (
+                  <WaitingRoom settings={settings} players={players} socketId={socketId} ready={ready} />
+                ) : State.Playing ? (
+                  <Game socketId={socketId} players={players} fruit={fruit} settings={settings} exitGame={exitGame} />
+                ) : (
+                  <div>Unexpected id: {roomId}</div>
+                )
+              }
+            />
+          </Routes>
+        </BrowserRouter>
+      ) : (
+        <div>Error: Unexpected state {socketStatus}</div>
+      )}
     </div>
   )
 }

@@ -141,7 +141,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     // Emit that game is ready
     io.emit(EVENT.SELECT_GAME, {
       state: model.state,
-      // Should probably more like: if findRoomId(roomId) || createNewRoom(uuidv4())
+      // Should probably more like: findRoomId(roomId) || createNewRoom(uuidv4())
       roomId: requestedRoomId || [].length > 0 || '',
       settings: {
         canvasSize: CANVAS_SIZE,

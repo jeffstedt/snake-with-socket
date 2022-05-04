@@ -5,7 +5,7 @@ type Context = CanvasRenderingContext2D
 
 interface Props {
   players: Player[]
-  fruit: Fruit
+  fruit: Fruit | null
   settings: Settings
 }
 
