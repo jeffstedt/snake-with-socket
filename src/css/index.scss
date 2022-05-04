@@ -50,7 +50,17 @@ input {
 }
 
 input {
+  margin: 0px;
   cursor: initial;
+}
+
+button {
+  margin: 0px;
+  font-size: 1.25rem;
+}
+
+h3 {
+  margin: 0px;
 }
 
 button:hover,
@@ -83,7 +93,6 @@ input:focus {
 
 .Ui-wrapper {
   display: flex;
-  flex-direction: row-reverse;
   gap: $theme-unit;
 }
 
@@ -93,14 +102,36 @@ canvas {
 }
 
 .Sidebar-wrapper {
-  width: 250px;
+  width: 300px;
   display: flex;
   flex-direction: column;
   gap: $theme-unit;
-  button {
-    margin: 0px;
-    font-size: 1.25rem;
+}
+
+.Input-wrapper {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  background-color: $color-dark-transparent-light;
+  padding: $theme-unit;
+  border-radius: $border-radius;
+  gap: $theme-unit * 2;
+  .Colors-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $theme-unit;
+    button {
+      margin: 0px;
+      font-size: 1.25rem;
+      flex: 0 0 calc(50% - $theme-unit / 2);
+    }
   }
+}
+
+.Buttons-wrapper {
+  display: flex;
+  gap: 1rem;
+  flex-direction: column;
 }
 
 .Leaderboard {

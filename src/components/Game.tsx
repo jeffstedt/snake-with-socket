@@ -18,11 +18,11 @@ function Game({ socketId, settings, players, fruit, exitGame }: Props) {
 
   return (
     <div className="Ui-wrapper">
+      <Canvas players={players} fruit={fruit} settings={settings} />
       <div className="Sidebar-wrapper">
         <Leaderboard players={players} socketId={socketId} />
         <button onClick={initExitGame}>Exit game</button>
       </div>
-      <Canvas players={players} fruit={fruit} settings={settings} />
     </div>
   )
 }

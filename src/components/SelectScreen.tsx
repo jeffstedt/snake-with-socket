@@ -8,12 +8,11 @@ interface Props {
   setInput: React.Dispatch<React.SetStateAction<Input>>
   settings: Settings
   roomId?: string
-  startGame?: (input: Input) => void
   joinRoom?: (roomId: string, input: Input) => void
   createRoom?: (input: Input) => void
 }
 
-export default function SelectScreen({ input, setInput, settings, roomId, startGame, joinRoom, createRoom }: Props) {
+export default function SelectScreen({ input, setInput, settings, roomId, joinRoom, createRoom }: Props) {
   const navigate = useNavigate()
   const paramId = useParams().id
   const currentRoomId = roomId || paramId
@@ -21,15 +20,6 @@ export default function SelectScreen({ input, setInput, settings, roomId, startG
   useEffect(() => {
     if (currentRoomId) navigate(`/${currentRoomId}`)
   }, [currentRoomId, navigate])
-
-  function initStartGame(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
-    event.preventDefault()
-    if (startGame && formIsValid) {
-      startGame(input)
-    } else {
-      throw new Error('Error: Tried to start game without required inputs')
-    }
-  }
 
   function initCreateRoom(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     event.preventDefault()
@@ -68,42 +58,42 @@ export default function SelectScreen({ input, setInput, settings, roomId, startG
   }
 
   return (
-    <>
-      <h3>Choose color</h3>
-      <div style={{ display: 'flex' }}>
-        {Object.entries(settings.color)
-          .filter(([, color]) => color !== Color.Red)
-          .map(renderColorButton)}
+    <div className="Ui-wrapper">
+      <div className="Input-wrapper">
+        <h3>Nickname</h3>
+        <input
+          className={input.name.length > 0 ? 'active' : ''}
+          type="text"
+          maxLength={settings.playerNameMaxLength}
+          onInput={(event) => setInput({ ...input, name: event.currentTarget.value })}
+        />
+        <h3>Snake color</h3>
+        <div className="Colors-wrapper">
+          {Object.entries(settings.color)
+            .filter(([, color]) => color !== Color.Red)
+            .map(renderColorButton)}
+        </div>
+        <div className="Buttons-wrapper">
+          {joinRoom && (
+            <button
+              disabled={!formIsValid}
+              className={formIsValid ? 'active' : 'inactive-submit'}
+              onClick={initJoinRoom}
+            >
+              Join game
+            </button>
+          )}
+          {createRoom && (
+            <button
+              disabled={!formIsValid}
+              className={formIsValid ? 'active' : 'inactive-submit'}
+              onClick={initCreateRoom}
+            >
+              Create game
+            </button>
+          )}
+        </div>
       </div>
-      <h3>Choose nickname</h3>
-      <input
-        className={input.name.length > 0 ? 'active' : ''}
-        type="text"
-        maxLength={settings.playerNameMaxLength}
-        onInput={(event) => setInput({ ...input, name: event.currentTarget.value })}
-      />
-      <br></br>
-      <div style={{ display: 'flex' }}>
-        {joinRoom && (
-          <button disabled={!formIsValid} className={formIsValid ? 'active' : 'inactive-submit'} onClick={initJoinRoom}>
-            Join game
-          </button>
-        )}
-        {createRoom && (
-          <button
-            disabled={!formIsValid}
-            className={formIsValid ? 'active' : 'inactive-submit'}
-            onClick={initCreateRoom}
-          >
-            Create game
-          </button>
-        )}
-      </div>
-      {startGame && (
-        <button disabled={!formIsValid} className={formIsValid ? 'active' : 'inactive-submit'} onClick={initStartGame}>
-          Ready
-        </button>
-      )}
-    </>
+    </div>
   )
 }

@@ -34,6 +34,9 @@ function WaitingRoom({ socketId, settings, players, ready }: Props) {
   return (
     <div className="Ui-wrapper" style={{ height: `${settings.canvasSize}px` }}>
       <div className="Sidebar-wrapper">
+        <Leaderboard players={players} socketId={socketId} />
+      </div>
+      <div className="Sidebar-wrapper">
         <button onClick={() => ready(socketId, currentRoomId)}>Ready</button>
         <button onClick={copyUrlToClipboard}>Share game</button>
         {
@@ -43,9 +46,6 @@ function WaitingRoom({ socketId, settings, players, ready }: Props) {
             </p>
           </div>
         }
-      </div>
-      <div className="Sidebar-wrapper">
-        <Leaderboard players={players} socketId={socketId} />
       </div>
     </div>
   )
