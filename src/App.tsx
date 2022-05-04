@@ -129,6 +129,7 @@ function App() {
             <Route
               path="/:id"
               element={
+                // Todo: How can this be cleaner..
                 socketStatus === State.Select ? (
                   <SelectScreen input={input} setInput={setInput} settings={settings} joinRoom={joinRoom} />
                 ) : socketStatus === State.WaitingRoom ? (
