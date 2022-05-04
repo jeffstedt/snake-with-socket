@@ -45,9 +45,9 @@ docker run -p 3000:3000 -p 3001:3001 snake-with-socket
 - [ ] Bug: Make it impossible for snake to change same-axis direction
 - [ ] Bug: On colission - end game before Snake travels to tail position
 - [ ] Make Snake multiplayer work
-  - [ ] Game lobby / unique game rooms
-  - [ ] Game lobby ready functionality
-  - [ ] Start on ready with count down timer
+  - [x] Game lobby / unique game rooms
+  - [ ] Proper game lobby ready functionality
+  - [ ] Handle concurrent game sessions
   - [ ] Player(s) collision
   - [ ] On collision - respawn in same game
 - [ ] Unit tests for core game features
