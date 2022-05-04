@@ -1,9 +1,24 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { socket } from './Api'
-import { Player, Fruit, EVENT, State, Settings, Color } from './shared-types'
-import Canvas from './Canvas'
-import SelectScreen from './SelectScreen'
-import Leaderboard from './Leaderboard'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import SelectScreen from 'components/SelectScreen'
+import Game from 'components/Game'
+import WaitingRoom from 'components/WaitingRoom'
+
+import {
+  Player,
+  Fruit,
+  EVENT,
+  State,
+  Settings,
+  Input,
+  JoinRoomInput,
+  CreateRoomInput,
+  Color,
+  ReadyInput,
+  ArrowKey,
+  CharacterKey,
+} from 'shared-types'
 
 function App() {
   const [socketStatus, setSocketStatus] = useState<State | 'Disconnected'>(State.Disconnected)
@@ -11,6 +26,8 @@ function App() {
   const [players, setPlayers] = useState<Player[]>([])
   const [fruit, setFruit] = useState<Fruit | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
+  const [roomId, setRoomId] = useState<string | undefined>(undefined)
+  const [input, setInput] = useState<Input>({ color: null, name: '' })
 
   useEffect(() => {
     // Connected to server
@@ -18,14 +35,17 @@ function App() {
       setSocketStatus(State.Loading)
       setSocektId(socket.id)
 
-      // Tell server client is ready
-      socket.emit(EVENT.INITIALIZE, { id: socket.id })
+      socket.emit(EVENT.INITIALIZE, { roomId: roomId })
 
       // We have handshake, retrieve game settings and go into select screen
-      socket.on(EVENT.SELECT_GAME, ({ state, settings }: { state: State; settings: Settings }) => {
-        setSocketStatus(state)
-        setSettings(settings)
-      })
+      socket.on(
+        EVENT.SELECT_GAME,
+        ({ state, roomId, settings }: { state: State; roomId: string; settings: Settings }) => {
+          setSocketStatus(state)
+          setSettings(settings)
+          setRoomId(roomId)
+        }
+      )
 
       // Listen to game updates and save them in our state
       socket.on(EVENT.GAME_UPDATE, ({ state, players, fruit }: { state: State; players: Player[]; fruit: Fruit }) => {
@@ -33,6 +53,13 @@ function App() {
         setPlayers(players)
         setFruit(fruit)
       })
+    })
+
+    // Server assignes us a room
+    socket.on(EVENT.JOIN_ROOM, ({ state, roomId, players }) => {
+      setSocketStatus(state)
+      setRoomId(roomId)
+      setPlayers(players)
     })
 
     // If we lose connection with server - reset app
@@ -43,45 +70,90 @@ function App() {
       setFruit(null)
       setSettings(null)
     })
+  }, [])
 
-    // Listen and emit keydown events
+  useEffect(() => {
+    // Listen and emit accepted keydown events
     window.addEventListener('keydown', (event) => {
-      socket.emit(EVENT.DIRECTION_UPDATE, {
-        playerId: socket.id,
-        keyDown: event.key,
-      })
+      const keyDown = event.key.toUpperCase()
+      if (acceptedKeys(keyDown)) {
+        socket.emit(EVENT.DIRECTION_UPDATE, { playerId: socket.id, keyDown })
+      }
     })
   }, [])
 
-  function startGame(color: Color, nickName: string) {
-    socket.emit(EVENT.START_GAME, { id: socket.id, color: color, name: nickName })
+  function acceptedKeys(key: string) {
+    const acceptedArrowKeys = [ArrowKey.ArrowUp, ArrowKey.ArrowLeft, ArrowKey.ArrowRight, ArrowKey.ArrowUp]
+    const acceptedCharacterKeys = [CharacterKey.W, CharacterKey.A, CharacterKey.S, CharacterKey.D]
+    return [...acceptedArrowKeys, ...acceptedCharacterKeys].map((x) => x.toString()).includes(key)
   }
 
-  function exitGame(event: React.MouseEvent<HTMLElement>) {
-    event.preventDefault()
+  const defaultColor = Color.Blue
+
+  function createRoom({ color, name }: Input) {
+    const payload: CreateRoomInput = { playerId: socket.id, color: color || defaultColor, name }
+    socket.emit(EVENT.CREATE_ROOM, payload)
+  }
+
+  function joinRoom(roomId: string, { color, name }: Input) {
+    const payload: JoinRoomInput = { roomId, playerId: socket.id, color: color || defaultColor, name }
+    socket.emit(EVENT.JOIN_ROOM, payload)
+  }
+
+  function ready(playerId: string, roomId: string) {
+    const payload: ReadyInput = { playerId, roomId }
+    socket.emit(EVENT.READY, payload)
+  }
+
+  function exitGame() {
     socket.emit(EVENT.EXIT_GAME)
   }
 
-  const applicationIsReady = socketStatus === State.Playing && socketId && players.length > 0 && fruit && settings
+  const clientHasServerConfigs = socketId && settings
+  const isConnectedToServer =
+    socketStatus === State.Playing || socketStatus === State.Select || socketStatus === State.WaitingRoom
 
   return (
     <div className="App">
+      <h1>-Snake logo-</h1>
       {socketStatus === State.Loading || socketStatus === State.Init ? (
-        'Loading...'
+        <div>Loading...</div>
       ) : socketStatus === State.Disconnected ? (
-        'Disconnected from server'
-      ) : settings && socketStatus === State.Select ? (
-        <SelectScreen settings={settings} startGame={startGame} />
-      ) : applicationIsReady ? (
-        <div className="Ui-wrapper">
-          <div className="Sidebar-wrapper">
-            <Leaderboard players={players} socketId={socketId} />
-            <button onClick={exitGame}>Exit game</button>
-          </div>
-          <Canvas players={players} fruit={fruit} settings={settings} />
-        </div>
+        <div>Disconnected from server</div>
+      ) : isConnectedToServer && clientHasServerConfigs ? (
+        <BrowserRouter>
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <SelectScreen
+                  input={input}
+                  setInput={setInput}
+                  settings={settings}
+                  roomId={roomId}
+                  createRoom={createRoom}
+                />
+              }
+            />
+            <Route
+              path="/:id"
+              element={
+                // Todo: How can this be cleaner..
+                socketStatus === State.Select ? (
+                  <SelectScreen input={input} setInput={setInput} settings={settings} joinRoom={joinRoom} />
+                ) : socketStatus === State.WaitingRoom ? (
+                  <WaitingRoom socketId={socketId} settings={settings} players={players} ready={ready} />
+                ) : State.Playing ? (
+                  <Game socketId={socketId} settings={settings} players={players} fruit={fruit} exitGame={exitGame} />
+                ) : (
+                  <div>Error: Unexpected id: {roomId}</div>
+                )
+              }
+            />
+          </Routes>
+        </BrowserRouter>
       ) : (
-        `Error: Unexpected state ${socketStatus}`
+        <div>Error: Unexpected state {socketStatus}</div>
       )}
     </div>
   )

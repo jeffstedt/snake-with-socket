@@ -1,11 +1,11 @@
 import { useRef, useEffect } from 'react'
-import { Player, Fruit, Settings } from './shared-types'
+import { Player, Fruit, Settings } from 'shared-types'
 
 type Context = CanvasRenderingContext2D
 
 interface Props {
   players: Player[]
-  fruit: Fruit
+  fruit: Fruit | null
   settings: Settings
 }
 

@@ -2,8 +2,10 @@ export enum EVENT {
   CONNECT = 'connect', // This keyword is socket io magic
   DISCONNECT = 'disconnect',
   INITIALIZE = 'initialize',
+  JOIN_ROOM = 'join_room',
+  CREATE_ROOM = 'create_room',
   SELECT_GAME = 'select_game',
-  START_GAME = 'start_game',
+  READY = 'ready',
   DIRECTION_UPDATE = 'direction_update',
   GAME_UPDATE = 'game_update',
   EXIT_GAME = 'exit_game',
@@ -43,12 +45,19 @@ export enum State {
   Init = 'Init',
   Playing = 'Playing',
   Select = 'Select',
+  WaitingRoom = 'WaitingRoom',
   Error = 'Error',
   Disconnected = 'Disconnected',
 }
 
 // Model
-export type Model = Loading | Init | Select | Playing | Error
+export type Model = Loading | Init | Select | WaitingRoom | Playing | Error
+
+// Todo: In a multiplayer mode, the model probably needs needs support multiprocessing like this..
+// export type Model = Room[]
+// type Room = Loading | Init | Select | WaitingRoom | Playing | Error
+// But then, the gameloop sort of always needs to run.
+// Either that, or we need to spin up new server instances for each unique room with the current model
 
 export interface Game {
   players: Player[]
@@ -71,9 +80,38 @@ export interface Select extends Game {
   state: State.Select
 }
 
+export interface WaitingRoom extends Game {
+  state: State.WaitingRoom
+}
+
 export interface Error extends Game {
   state: State.Error
 }
+
+export interface Input {
+  color: Color | null
+  name: string
+}
+
+export interface CreateRoomInput {
+  playerId: string
+  name: string
+  color: Color
+}
+
+export interface JoinRoomInput {
+  roomId: string
+  playerId: string
+  name: string
+  color: Color
+}
+
+export interface ReadyInput {
+  playerId: string
+  roomId: string
+}
+
+export type NewPlayerInput = CreateRoomInput
 
 export interface Position {
   x: number
@@ -96,10 +134,11 @@ export interface Fruit {
 
 export interface Player {
   id: string
+  roomId: string
   name: string
   color: Color
   size: number
-  length: number
+  points: number
   position: Position
   positions: Position[]
   direction: PlayerDirection

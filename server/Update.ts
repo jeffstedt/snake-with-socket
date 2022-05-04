@@ -2,11 +2,11 @@ import { Player, Position, PlayerDirection, Fruit } from '../src/shared-types'
 import { CANVAS_SIZE, PLAYER_SIZE } from './Constants'
 import { createFruit } from './Utils'
 
-function updatePoint(player: Player, fruit: Fruit): number {
+function updatePoints(player: Player, fruit: Fruit): number {
   if (playerIsFruitPosition(player.position, fruit.position)) {
-    return player.length + 1
+    return player.points + 1
   } else {
-    return player.length
+    return player.points
   }
 }
 
@@ -84,4 +84,4 @@ function updatePlayerDirection(newDirection: PlayerDirection, currentDirection: 
   }
 }
 
-export { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection }
+export { updatePoints, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection }

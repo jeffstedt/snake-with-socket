@@ -1,21 +1,35 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
-import { EVENT, Player, Model, PlayerDirection, Color, State } from '../src/shared-types'
-import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
+import { SERVER_PORT, ENV, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, getHHMMSSduration } from './Utils'
-import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
+import { updatePoints, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
+import { v4 as uuidv4 } from 'uuid'
 
-process.title = 'SnakeIOGame'
+import {
+  EVENT,
+  Player,
+  Model,
+  PlayerDirection,
+  Color,
+  State,
+  NewPlayerInput,
+  CreateRoomInput,
+  JoinRoomInput,
+  ReadyInput,
+} from '../src/shared-types'
+
+process.title = 'snake-with-socket'
 
 const httpServer = createServer()
 const io = new Server(httpServer)
 
-let loop = { tick: 0, previousClock: hourTimeMs(), debug: true }
+let loop = { tick: 0, previousClock: hourTimeMs(), debug: process.env.APP_ENV === ENV.DEVELOPMENT }
 let model: Model = defaultModel()
 
 type Msg =
   | { type: 'Init'; socketId: string }
-  | { type: 'NewGame'; socketId: string; player: Player }
+  | { type: 'NewPlayer'; socketId: string; roomId: string; input: NewPlayerInput }
+  | { type: 'NewGame'; socketId: string }
   | { type: 'Playing' }
   | { type: 'Loading' }
   | { type: 'Disconnect'; socketId: string }
@@ -28,13 +42,15 @@ function updateModel(prevModel: Model, msg: Msg) {
     case 'Init':
       model = { ...defaultModel(), state: State.Select }
       break
-    case 'NewGame':
+    case 'NewPlayer':
       model = {
         ...prevModel,
-        state: State.Playing,
-        players: [createPlayer(msg.socketId, msg.player.color, msg.player.name)],
-        fruit: createFruit(),
+        state: State.WaitingRoom,
+        players: prevModel.players.concat(createPlayer(msg.socketId, msg.roomId, msg.input.color, msg.input.name)),
       }
+      break
+    case 'NewGame':
+      model = { ...prevModel, state: State.Playing, fruit: createFruit() }
       break
     case 'Playing':
       model = { ...prevModel, state: State.Playing }
@@ -70,7 +86,7 @@ function updateModel(prevModel: Model, msg: Msg) {
                 ...player,
                 position: updatePlayerPosition(player.position, player.direction),
                 positions: updateTailPositions(player, prevModel.fruit),
-                length: updatePoint(player, prevModel.fruit),
+                points: updatePoints(player, prevModel.fruit),
               }
             : player
         ),
@@ -86,7 +102,7 @@ function updateModel(prevModel: Model, msg: Msg) {
         model = {
           ...prevModel,
           state: State.Playing,
-          players: [createPlayer(msg.player.id, msg.player.color, msg.player.name)],
+          players: [createPlayer(msg.player.id, msg.player.roomId, msg.player.color, msg.player.name)],
           fruit: createFruit(),
         }
       } else {
@@ -106,13 +122,27 @@ function updateModel(prevModel: Model, msg: Msg) {
 io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   console.info('New connection established:', socket.id)
 
-  socket.on(EVENT.INITIALIZE, () => {
+  socket.on(EVENT.CREATE_ROOM, (input: CreateRoomInput) => {
+    const newRoomId = uuidv4().substring(0, 6)
+    updateModel(model, { type: 'NewPlayer', socketId: socket.id, roomId: newRoomId, input })
+    io.emit(EVENT.JOIN_ROOM, { state: model.state, roomId: newRoomId, players: model.players })
+  })
+
+  socket.on(EVENT.JOIN_ROOM, (input: JoinRoomInput) => {
+    // Todo: search for joinRoomId and valdiate before joining
+    updateModel(model, { type: 'NewPlayer', socketId: socket.id, roomId: input.roomId, input })
+    io.emit(EVENT.JOIN_ROOM, { state: model.state, roomId: input.roomId, players: model.players })
+  })
+
+  socket.on(EVENT.INITIALIZE, ({ roomId: requestedRoomId }: { roomId: string | null }) => {
     // Client wants to init a new game
     updateModel(model, { type: 'Init', socketId: socket.id })
 
     // Emit that game is ready
     io.emit(EVENT.SELECT_GAME, {
       state: model.state,
+      // Should probably more like: findRoomId(roomId) || createNewRoom(uuidv4())
+      roomId: requestedRoomId || [].length > 0 || '',
       settings: {
         canvasSize: CANVAS_SIZE,
         cellSize: CELL_SIZE,
@@ -122,9 +152,12 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     })
   })
 
-  socket.on(EVENT.START_GAME, (player: Player) => {
-    // Client wants to start a new game
-    updateModel(model, { type: 'NewGame', socketId: socket.id, player })
+  socket.on(EVENT.READY, (input: ReadyInput) => {
+    const allPlayersAreReady = true // Todo: Check if everyone in the room are ready
+
+    if (allPlayersAreReady) {
+      updateModel(model, { type: 'NewGame', socketId: socket.id })
+    }
 
     if (model.state === State.Playing && model.players.length >= 1) {
       gameLoop()
@@ -134,7 +167,6 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   })
 
   socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
-    // Client wants to update the player.direction
     const parsedKeyDown = parseKeyDown(keyDown.toUpperCase())
     if (parsedKeyDown !== 'ILLIGAL_KEY') {
       updateModel(model, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
@@ -144,6 +176,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   })
 
   socket.on(EVENT.EXIT_GAME, () => {
+    // Todo: This won't fly, need to do a players.filter() instead
     updateModel(model, { type: 'Init', socketId: socket.id })
   })
 
@@ -181,7 +214,7 @@ function gameLoop() {
           cpu: process.cpuUsage(),
           upTime: getHHMMSSduration(process.uptime()),
           pid: process.pid,
-          // model,
+          model,
         },
         null,
         2

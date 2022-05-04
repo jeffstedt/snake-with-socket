@@ -5,6 +5,7 @@ $color-dark-transparent-hard: rgba(0, 0, 0, 0.85);
 $color-dark-transparent-light: rgba(0, 0, 0, 0.25);
 $border-radius: 8px;
 $theme-unit: 1rem;
+$none: 0px;
 
 body {
   background-color: $color-black-light;
@@ -40,7 +41,7 @@ input {
   border: 3px solid $color-dark-transparent-hard;
   padding: 10px 30px;
   font-family: Courier;
-  box-shadow: -3px 4px 0px 0px $color-dark-transparent-hard;
+  box-shadow: -3px 4px $none $none $color-dark-transparent-hard;
   transition: transform 0.1s ease, box-shadow 0.1s ease, opacity 0.1s ease;
   margin: $theme-unit;
   opacity: 0.5;
@@ -50,19 +51,29 @@ input {
 }
 
 input {
+  margin: $none;
   cursor: initial;
+  box-shadow: none;
+}
+
+button {
+  margin: $none;
+  font-size: 1.25rem;
+  &:disabled {
+    cursor: initial;
+  }
+}
+
+h3 {
+  margin: $none;
 }
 
 button:hover,
 button:focus,
 .active-color {
   transform: translateY(2px);
-  box-shadow: 0px 0px 0px 0px $color-dark-transparent-hard;
+  box-shadow: $none $none $none $none $color-dark-transparent-hard;
   opacity: 1;
-}
-
-button:active {
-  color: $color-white;
 }
 
 .active-color {
@@ -72,7 +83,7 @@ button:active {
 
 .inactive-submit:hover {
   transform: none;
-  box-shadow: -3px 4px 0px 0px $color-dark-transparent-hard;
+  box-shadow: -3px 4px $none $none $color-dark-transparent-hard;
   opacity: 0.5;
 }
 
@@ -83,7 +94,6 @@ input:focus {
 
 .Ui-wrapper {
   display: flex;
-  flex-direction: row-reverse;
   gap: $theme-unit;
 }
 
@@ -93,14 +103,40 @@ canvas {
 }
 
 .Sidebar-wrapper {
-  width: 250px;
+  width: 300px;
   display: flex;
   flex-direction: column;
   gap: $theme-unit;
-  button {
-    margin: 0px;
-    font-size: 1.25rem;
+}
+
+.Input-wrapper {
+  width: 300px;
+  background-color: $color-dark-transparent-light;
+  padding: $theme-unit * 2;
+  border-radius: $border-radius;
+  .Colors-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $theme-unit;
+    button {
+      margin: $none;
+      font-size: 1.25rem;
+      flex: 0 0 calc(50% - $theme-unit / 2);
+    }
   }
+}
+
+.Section {
+  display: flex;
+  flex-direction: column;
+}
+
+.Gap-1 {
+  gap: $theme-unit;
+}
+
+.Gap-2 {
+  gap: $theme-unit * 2;
 }
 
 .Leaderboard {
@@ -111,9 +147,68 @@ canvas {
   font-size: 14px;
   border-radius: $border-radius;
   overflow: hidden;
+  overflow-y: scroll;
+
+  // &::-webkit-scrollbar {
+  //   -webkit-appearance: none;
+  //   width: 5px;
+  // }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+
   .row {
     padding: $theme-unit;
     display: flex;
     justify-content: space-between;
+    border-bottom: 2px solid $color-dark-transparent-light;
+  }
+}
+
+.Snackbar {
+  visibility: hidden;
+  background-color: $color-dark-transparent-light;
+  color: $color-white;
+  border-radius: $border-radius;
+  font-size: $theme-unit;
+  text-align: left;
+  padding: $theme-unit;
+  position: relative;
+  p {
+    margin: $none;
+  }
+}
+
+.v-hidden {
+  visibility: hidden;
+}
+
+.v-visible {
+  visibility: visible;
+  animation: fadein 0.5s, fadeout 0.5s 9.5s;
+}
+
+@keyframes fadein {
+  from {
+    bottom: -$theme-unit * 2;
+    opacity: 0;
+  }
+  to {
+    bottom: $none;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    bottom: $none;
+    opacity: 1;
+  }
+  to {
+    bottom: -$theme-unit * 2;
+    opacity: 0;
   }
 }

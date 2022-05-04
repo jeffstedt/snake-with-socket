@@ -1,6 +1,6 @@
 # Snake game with socket.io
 
-![Demo](/220406-screenshot.gif)
+![Demo](/220504-screenshot.gif)
 
 Install
 
@@ -56,3 +56,4 @@ docker run -p 3000:3000 -p 3001:3001 snake-with-socket
   - [ ] Gain length / earn point
   - [ ] Self collision
   - [ ] Snake.position[] logic
+- [ ] Make packages smaller by streaming binary data instead of JSON
