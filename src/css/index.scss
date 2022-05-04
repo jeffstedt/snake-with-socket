@@ -110,12 +110,9 @@ canvas {
 
 .Input-wrapper {
   width: 300px;
-  display: flex;
-  flex-direction: column;
   background-color: $color-dark-transparent-light;
-  padding: $theme-unit;
+  padding: $theme-unit * 2;
   border-radius: $border-radius;
-  gap: $theme-unit * 2;
   .Colors-wrapper {
     display: flex;
     flex-wrap: wrap;
@@ -128,16 +125,17 @@ canvas {
   }
 }
 
-.Input-section-wrapper {
+.Section {
   display: flex;
-  gap: 1rem;
   flex-direction: column;
 }
 
-.Buttons-wrapper {
-  display: flex;
-  gap: 1rem;
-  flex-direction: column;
+.Gap-1 {
+  gap: $theme-unit;
+}
+
+.Gap-2 {
+  gap: $theme-unit * 2;
 }
 
 .Leaderboard {

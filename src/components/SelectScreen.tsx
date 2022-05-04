@@ -58,9 +58,9 @@ export default function SelectScreen({ input, setInput, settings, roomId, joinRo
   }
 
   return (
-    <div className="Ui-wrapper">
-      <div className="Input-wrapper">
-        <div className="Input-section-wrapper">
+    <div className="Section Gap-1">
+      <div className="Input-wrapper Section Gap-2">
+        <div className="Section Gap-1">
           <h3>Nickname</h3>
           <input
             className={input.name.length > 0 ? 'active' : ''}
@@ -69,7 +69,7 @@ export default function SelectScreen({ input, setInput, settings, roomId, joinRo
             onInput={(event) => setInput({ ...input, name: event.currentTarget.value })}
           />
         </div>
-        <div className="Input-section-wrapper">
+        <div className="Section Gap-1">
           <h3>Snake color</h3>
           <div className="Colors-wrapper">
             {Object.entries(settings.color)
@@ -77,26 +77,22 @@ export default function SelectScreen({ input, setInput, settings, roomId, joinRo
               .map(renderColorButton)}
           </div>
         </div>
-        <div className="Buttons-wrapper">
-          {joinRoom && (
-            <button
-              disabled={!formIsValid}
-              className={formIsValid ? 'active' : 'inactive-submit'}
-              onClick={initJoinRoom}
-            >
-              Join game
-            </button>
-          )}
-          {createRoom && (
-            <button
-              disabled={!formIsValid}
-              className={formIsValid ? 'active' : 'inactive-submit'}
-              onClick={initCreateRoom}
-            >
-              Create game
-            </button>
-          )}
-        </div>
+      </div>
+      <div className="Section Gap-1">
+        {joinRoom && (
+          <button disabled={!formIsValid} className={formIsValid ? 'active' : 'inactive-submit'} onClick={initJoinRoom}>
+            Join game
+          </button>
+        )}
+        {createRoom && (
+          <button
+            disabled={!formIsValid}
+            className={formIsValid ? 'active' : 'inactive-submit'}
+            onClick={initCreateRoom}
+          >
+            Create game
+          </button>
+        )}
       </div>
     </div>
   )
