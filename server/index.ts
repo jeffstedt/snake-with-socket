@@ -1,6 +1,6 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
-import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
+import { SERVER_PORT, ENV, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, getHHMMSSduration } from './Utils'
 import { updatePoints, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
 import { v4 as uuidv4 } from 'uuid'
@@ -23,7 +23,7 @@ process.title = 'snake-with-socket'
 const httpServer = createServer()
 const io = new Server(httpServer)
 
-let loop = { tick: 0, previousClock: hourTimeMs(), debug: true }
+let loop = { tick: 0, previousClock: hourTimeMs(), debug: process.env.APP_ENV === ENV.DEVELOPMENT }
 let model: Model = defaultModel()
 
 type Msg =

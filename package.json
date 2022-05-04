@@ -20,10 +20,10 @@
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "dev": "npm run server & npm run client",
+    "dev": "APP_ENV=DEVELOPMENT npm run server & npm run client",
     "server": "ts-node-dev server/index.ts",
     "client": "PORT=3000 react-scripts start",
-    "build": "react-scripts build",
+    "build": "APP_ENV=PRODUCTION react-scripts build",
     "test": "echo No avalaible tests"
   },
   "eslintConfig": {
