@@ -14,7 +14,7 @@ function WaitingRoom({ socketId, settings, players, ready }: Props) {
   const [snackbar, setSnackbar] = useState<{ show: boolean; text: string }>({ show: false, text: '' })
   const currentRoomId = useParams().id || ''
   const visibilityClass = snackbar.show ? 'v-visible' : 'v-hidden'
-  const snackbarClasses = ['snackbar', visibilityClass].join(' ')
+  const snackbarClasses = ['Snackbar', visibilityClass].join(' ')
 
   async function copyUrlToClipboard() {
     const { clipboard } = navigator

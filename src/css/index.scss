@@ -167,7 +167,7 @@ canvas {
   }
 }
 
-.snackbar {
+.Snackbar {
   visibility: hidden;
   background-color: $color-dark-transparent-light;
   color: $color-white;
@@ -177,7 +177,6 @@ canvas {
   padding: $theme-unit;
   position: relative;
   p {
-    padding: 0px;
     margin: 0px;
   }
 }
