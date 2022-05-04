@@ -22,7 +22,10 @@ function WaitingRoom({ socketId, settings, players, ready }: Props) {
       .writeText(window.location.href)
       .then(() => clipboard.readText())
       .catch((err) => {
-        throw new Error('Enable to share room', err)
+        throw new Error(
+          'Enable to share room. Make sure you have allowed the browser to access the clipboard. Error:',
+          err
+        )
       })
 
     if (clipboardResult) {
