@@ -9,7 +9,7 @@ export default function Leaderboard({ players, socketId }: Props) {
   return (
     <div className="Leaderboard">
       {[...players]
-        .sort((a: Player, z: Player) => z.length - a.length)
+        .sort((a: Player, z: Player) => z.points - a.points)
         .map((player: Player, index: number) => (
           <div
             className="row"
@@ -20,7 +20,7 @@ export default function Leaderboard({ players, socketId }: Props) {
               {index + 1}. {player.name}
               {player.id === socketId && ' (You)'}
             </span>
-            <span>{player.length}</span>
+            <span>{player.points}</span>
           </div>
         ))}
     </div>

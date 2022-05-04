@@ -21,7 +21,7 @@ const createPlayer = (id: string, roomId: string, color: Color, name: string): P
   name: formatPlayerName(name),
   color,
   size: PLAYER_SIZE,
-  length: 1,
+  points: 0,
   position: { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 },
   positions: [],
   direction: avalaibleDirections.sort(() => Math.random() - 0.5)[0],

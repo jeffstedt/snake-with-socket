@@ -138,7 +138,7 @@ export interface Player {
   name: string
   color: Color
   size: number
-  length: number
+  points: number
   position: Position
   positions: Position[]
   direction: PlayerDirection

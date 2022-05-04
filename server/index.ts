@@ -2,7 +2,7 @@ import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
 import { SERVER_PORT, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, getHHMMSSduration } from './Utils'
-import { updatePoint, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
+import { updatePoints, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
 import { v4 as uuidv4 } from 'uuid'
 
 import {
@@ -86,7 +86,7 @@ function updateModel(prevModel: Model, msg: Msg) {
                 ...player,
                 position: updatePlayerPosition(player.position, player.direction),
                 positions: updateTailPositions(player, prevModel.fruit),
-                length: updatePoint(player, prevModel.fruit),
+                points: updatePoints(player, prevModel.fruit),
               }
             : player
         ),
