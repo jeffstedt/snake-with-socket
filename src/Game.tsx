@@ -4,13 +4,13 @@ import { Player, Fruit, Settings } from './shared-types'
 
 interface Props {
   socketId: string
+  settings: Settings
   players: Player[]
   fruit: Fruit | null
-  settings: Settings
   exitGame: () => void
 }
 
-function Game({ socketId, players, fruit, settings, exitGame }: Props) {
+function Game({ socketId, settings, players, fruit, exitGame }: Props) {
   function initExitGame(event: React.MouseEvent<HTMLElement>) {
     event.preventDefault()
     exitGame()

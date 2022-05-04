@@ -4,12 +4,12 @@ import { useParams } from 'react-router-dom'
 
 interface Props {
   socketId: string
-  players: Player[]
   settings: Settings
+  players: Player[]
   ready: (playerId: string, roomId: string) => void
 }
 
-function WaitingRoom({ socketId, players, settings, ready }: Props) {
+function WaitingRoom({ socketId, settings, players, ready }: Props) {
   const currentRoomId = useParams().id || ''
   return (
     <div className="Ui-wrapper" style={{ height: `${settings.canvasSize}px` }}>

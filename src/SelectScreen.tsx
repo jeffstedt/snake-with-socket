@@ -4,16 +4,16 @@ import { Settings, Color, Input } from './shared-types'
 import { useParams } from 'react-router-dom'
 
 interface Props {
-  settings: Settings
-  roomId?: string
   input: Input
   setInput: React.Dispatch<React.SetStateAction<Input>>
+  settings: Settings
+  roomId?: string
   startGame?: (input: Input) => void
   joinRoom?: (roomId: string, input: Input) => void
   createRoom?: (input: Input) => void
 }
 
-export default function SelectScreen({ settings, roomId, input, setInput, startGame, joinRoom, createRoom }: Props) {
+export default function SelectScreen({ input, setInput, settings, roomId, startGame, joinRoom, createRoom }: Props) {
   const navigate = useNavigate()
   const paramId = useParams().id
   const currentRoomId = roomId || paramId

@@ -118,9 +118,9 @@ function App() {
               element={
                 <SelectScreen
                   input={input}
-                  roomId={roomId}
                   setInput={setInput}
                   settings={settings}
+                  roomId={roomId}
                   createRoom={createRoom}
                   joinRoom={joinRoom}
                 />
@@ -130,13 +130,13 @@ function App() {
               path="/:id"
               element={
                 socketStatus === State.Select ? (
-                  <SelectScreen settings={settings} joinRoom={joinRoom} input={input} setInput={setInput} />
+                  <SelectScreen input={input} setInput={setInput} settings={settings} joinRoom={joinRoom} />
                 ) : socketStatus === State.WaitingRoom ? (
-                  <WaitingRoom settings={settings} players={players} socketId={socketId} ready={ready} />
+                  <WaitingRoom socketId={socketId} settings={settings} players={players} ready={ready} />
                 ) : State.Playing ? (
-                  <Game socketId={socketId} players={players} fruit={fruit} settings={settings} exitGame={exitGame} />
+                  <Game socketId={socketId} settings={settings} players={players} fruit={fruit} exitGame={exitGame} />
                 ) : (
-                  <div>Unexpected id: {roomId}</div>
+                  <div>Error: Unexpected id: {roomId}</div>
                 )
               }
             />
