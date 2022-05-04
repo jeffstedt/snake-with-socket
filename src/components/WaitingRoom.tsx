@@ -27,7 +27,7 @@ function WaitingRoom({ socketId, settings, players, ready }: Props) {
 
     if (clipboardResult) {
       setSnackbar({ show: true, text: clipboardResult })
-      setTimeout(() => setSnackbar({ show: false, text: '' }), 3000)
+      setTimeout(() => setSnackbar({ show: false, text: '' }), 10000)
     }
   }
 
@@ -38,12 +38,14 @@ function WaitingRoom({ socketId, settings, players, ready }: Props) {
       </div>
       <div className="Sidebar-wrapper">
         <button onClick={() => ready(socketId, currentRoomId)}>Ready</button>
-        <button onClick={copyUrlToClipboard}>Share game</button>
+        <button onClick={copyUrlToClipboard}>Invite friends</button>
         {
           <div className={snackbarClasses}>
             <p>
-              <u>{snackbar.text}</u> is now copied to clipboard
+              <u>{snackbar.text}</u> is now copied to clipboard.
             </p>
+            <br />
+            <p>Share it with your friends!</p>
           </div>
         }
       </div>
