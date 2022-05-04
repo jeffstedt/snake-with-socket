@@ -31,7 +31,6 @@ function App() {
 
   useEffect(() => {
     // Connected to server
-
     socket.on(EVENT.CONNECT, () => {
       setSocketStatus(State.Loading)
       setSocektId(socket.id)
@@ -71,20 +70,22 @@ function App() {
       setFruit(null)
       setSettings(null)
     })
+  }, [])
 
+  useEffect(() => {
     // Listen and emit accepted keydown events
     window.addEventListener('keydown', (event) => {
-      const keyDown = event.key
+      const keyDown = event.key.toUpperCase()
       if (acceptedKeys(keyDown)) {
         socket.emit(EVENT.DIRECTION_UPDATE, { playerId: socket.id, keyDown })
       }
     })
-  }, [roomId])
+  }, [])
 
   function acceptedKeys(key: string) {
     const acceptedArrowKeys = [ArrowKey.ArrowUp, ArrowKey.ArrowLeft, ArrowKey.ArrowRight, ArrowKey.ArrowUp]
     const acceptedCharacterKeys = [CharacterKey.W, CharacterKey.A, CharacterKey.S, CharacterKey.D]
-    return [...acceptedArrowKeys, ...acceptedCharacterKeys].map(toString).includes(key)
+    return [...acceptedArrowKeys, ...acceptedCharacterKeys].map((x) => x.toString()).includes(key)
   }
 
   const defaultColor = Color.Blue
