@@ -16,6 +16,8 @@ import {
   CreateRoomInput,
   Color,
   ReadyInput,
+  ArrowKey,
+  CharacterKey,
 } from 'shared-types'
 
 function App() {
@@ -70,14 +72,20 @@ function App() {
       setSettings(null)
     })
 
-    // Listen and emit keydown events
+    // Listen and emit accepted keydown events
     window.addEventListener('keydown', (event) => {
-      socket.emit(EVENT.DIRECTION_UPDATE, {
-        playerId: socket.id,
-        keyDown: event.key,
-      })
+      const keyDown = event.key
+      if (acceptedKeys(keyDown)) {
+        socket.emit(EVENT.DIRECTION_UPDATE, { playerId: socket.id, keyDown })
+      }
     })
   }, [roomId])
+
+  function acceptedKeys(key: string) {
+    const acceptedArrowKeys = [ArrowKey.ArrowUp, ArrowKey.ArrowLeft, ArrowKey.ArrowRight, ArrowKey.ArrowUp]
+    const acceptedCharacterKeys = [CharacterKey.W, CharacterKey.A, CharacterKey.S, CharacterKey.D]
+    return [...acceptedArrowKeys, ...acceptedCharacterKeys].map(enum_ => enum_.toString()).includes(key)
+  }
 
   const defaultColor = Color.Blue
 
