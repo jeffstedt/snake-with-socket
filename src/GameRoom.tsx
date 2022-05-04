@@ -33,15 +33,17 @@ function GameRoom({ input, setInput, socketStatus, socketId, players, fruit, set
   ) : settings && socketStatus === State.Select ? (
     <SelectScreen settings={settings} roomId={currentRoomId} joinRoom={joinRoom} input={input} setInput={setInput} />
   ) : socketId && currentRoomId && socketStatus === State.WaitingRoom ? (
-    <div className="Sidebar-wrapper">
-      {/*
+    <div className="Ui-wrapper" style={{height: `${settings?.canvasSize}px`}}>
+      <div className="Sidebar-wrapper">
+        {/*
       Todo: Instead of reusing Leaderboard - Create a custom component:
       1. Player1          X
       2. Player2 (You)    Ready
       etc..
       */}
-      <Leaderboard players={players} socketId={socketId} />
-      <button onClick={() => ready(socketId, currentRoomId)}>Ready</button>
+        <Leaderboard players={players} socketId={socketId} />
+        <button onClick={() => ready(socketId, currentRoomId)}>Ready</button>
+      </div>
     </div>
   ) : isConnectedToServer && fruit ? (
     <Game socketId={socketId} players={players} fruit={fruit} settings={settings} exitGame={exitGame} />
