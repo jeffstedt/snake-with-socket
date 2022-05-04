@@ -131,3 +131,49 @@ canvas {
     border-bottom: 2px solid $color-dark-transparent-light;
   }
 }
+
+.snackbar {
+  visibility: hidden;
+  background-color: $color-dark-transparent-light;
+  color: $color-white;
+  border-radius: $border-radius;
+  font-size: $theme-unit;
+  text-align: left;
+  padding: $theme-unit;
+  position: relative;
+  p {
+    padding: 0px;
+    margin: 0px;
+  }
+}
+
+.v-hidden {
+  visibility: hidden;
+}
+
+.v-visible {
+  visibility: visible;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@keyframes fadein {
+  from {
+    bottom: -$theme-unit * 2;
+    opacity: 0;
+  }
+  to {
+    bottom: 0rem;
+    opacity: 1;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    bottom: 0rem;
+    opacity: 1;
+  }
+  to {
+    bottom: -$theme-unit * 2;
+    opacity: 0;
+  }
+}
