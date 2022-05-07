@@ -6,6 +6,7 @@ import { updatePoints, updateFruit, updatePlayerPosition, updateTailPositions, u
 import { v4 as uuidv4 } from 'uuid'
 
 import {
+  Game,
   EVENT,
   Player,
   Model,
@@ -27,46 +28,54 @@ let loop = { tick: 0, previousClock: hourTimeMs(), debug: process.env.APP_ENV ==
 let model: Model = defaultModel()
 
 type Msg =
-  | { type: 'Init'; socketId: string }
-  | { type: 'NewPlayer'; socketId: string; roomId: string; input: NewPlayerInput }
-  | { type: 'NewGame'; socketId: string }
+  | { type: 'Init'; playerId: string }
+  | { type: 'NewPlayer'; playerId: string; roomId: string; input: NewPlayerInput }
+  | { type: 'NewGame'; playerId: string; roomId: string }
   | { type: 'Playing' }
   | { type: 'Loading' }
-  | { type: 'Disconnect'; socketId: string }
+  | { type: 'Disconnect'; playerId: string }
+  | { type: 'PlayerIsReady'; playerId: string }
   | { type: 'UpdatePlayerDirection'; playerId: string; direction: PlayerDirection }
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'CheckForCollision'; player: Player }
 
+function updateGames(existingGames: Model, newGameModel: Game): Model {
+  // Todo: Instead of iterating all games, we should be able to cherry pick the game we want to update
+  return existingGames.map((game) => (game.roomId === newGameModel.roomId ? newGameModel : game))
+}
+
 function updateModel(prevModel: Model, msg: Msg) {
+  const game = prevModel[0]
   switch (msg.type) {
     case 'Init':
-      model = { ...defaultModel(), state: State.Select }
+      model = updateGames(prevModel, { ...game, state: State.Select })
       break
     case 'NewPlayer':
-      model = {
-        ...prevModel,
+      model = updateGames(prevModel, {
+        ...game,
+        roomId: msg.roomId,
         state: State.WaitingRoom,
-        players: prevModel.players.concat(createPlayer(msg.socketId, msg.roomId, msg.input.color, msg.input.name)),
-      }
+        players: game.players.concat(createPlayer(msg.playerId, msg.roomId, msg.input.color, msg.input.name)),
+      })
       break
     case 'NewGame':
-      model = { ...prevModel, state: State.Playing, fruit: createFruit() }
+      model = updateGames(prevModel, { ...game, roomId: game.roomId, state: State.Playing, fruit: createFruit() })
       break
     case 'Playing':
-      model = { ...prevModel, state: State.Playing }
+      model = updateGames(prevModel, { ...game, state: State.Playing })
       break
     case 'Disconnect':
-      model = {
-        ...prevModel,
-        state: State.Loading,
-        players: prevModel.players.filter((player) => player.id !== msg.socketId),
-      }
+      model = updateGames(prevModel, {
+        ...game,
+        state: State.Select,
+        players: game.players.filter((player) => player.id !== msg.playerId),
+      })
       break
     case 'UpdatePlayerDirection':
-      model = {
-        ...prevModel,
+      model = updateGames(prevModel, {
+        ...game,
         state: State.Playing,
-        players: prevModel.players.map((player) =>
+        players: game.players.map((player) =>
           player.id === msg.playerId
             ? {
                 ...player,
@@ -74,24 +83,38 @@ function updateModel(prevModel: Model, msg: Msg) {
               }
             : player
         ),
-      }
+      })
+      break
+    case 'PlayerIsReady':
+      model = updateGames(prevModel, {
+        ...game,
+        state: State.WaitingRoom,
+        players: game.players.map((player) =>
+          player.id === msg.playerId
+            ? {
+                ...player,
+                ready: !player.ready,
+              }
+            : player
+        ),
+      })
       break
     case 'UpdatePlayer':
-      model = {
-        ...prevModel,
+      model = updateGames(prevModel, {
+        ...game,
         state: State.Playing,
-        players: prevModel.players.map((player) =>
+        players: game.players.map((player) =>
           player.id === msg.player.id
             ? {
                 ...player,
                 position: updatePlayerPosition(player.position, player.direction),
-                positions: updateTailPositions(player, prevModel.fruit),
-                points: updatePoints(player, prevModel.fruit),
+                positions: updateTailPositions(player, game.fruit),
+                points: updatePoints(player, game.fruit),
               }
             : player
         ),
-        fruit: updateFruit(msg.player, prevModel.fruit),
-      }
+        fruit: updateFruit(msg.player, game.fruit),
+      })
       break
     case 'CheckForCollision':
       if (
@@ -99,18 +122,18 @@ function updateModel(prevModel: Model, msg: Msg) {
           (tailCell) => tailCell.x === msg.player.position.x && tailCell.y === msg.player.position.y
         )
       ) {
-        model = {
-          ...prevModel,
+        model = updateGames(prevModel, {
+          ...game,
           state: State.Playing,
           players: [createPlayer(msg.player.id, msg.player.roomId, msg.player.color, msg.player.name)],
           fruit: createFruit(),
-        }
+        })
       } else {
         model = prevModel
       }
       break
     case 'Loading':
-      model = { ...prevModel, ...defaultModel }
+      model = updateGames(prevModel, { ...game, state: State.Loading })
       break
     default:
       model = prevModel
@@ -123,24 +146,28 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   console.info('New connection established:', socket.id)
 
   socket.on(EVENT.CREATE_ROOM, (input: CreateRoomInput) => {
-    const newRoomId = uuidv4().substring(0, 6)
-    updateModel(model, { type: 'NewPlayer', socketId: socket.id, roomId: newRoomId, input })
-    io.emit(EVENT.JOIN_ROOM, { state: model.state, roomId: newRoomId, players: model.players })
+    const newRoomId = model[0].roomId
+    updateModel(model, { type: 'NewPlayer', playerId: socket.id, roomId: newRoomId, input })
+    const game = model[0]
+
+    io.emit(EVENT.JOIN_ROOM, { state: game.state, roomId: game.roomId, players: game.players })
   })
 
   socket.on(EVENT.JOIN_ROOM, (input: JoinRoomInput) => {
     // Todo: search for joinRoomId and valdiate before joining
-    updateModel(model, { type: 'NewPlayer', socketId: socket.id, roomId: input.roomId, input })
-    io.emit(EVENT.JOIN_ROOM, { state: model.state, roomId: input.roomId, players: model.players })
+    updateModel(model, { type: 'NewPlayer', playerId: socket.id, roomId: input.roomId, input })
+    const game = model[0]
+    io.emit(EVENT.JOIN_ROOM, { state: game.state, roomId: input.roomId, players: game.players })
   })
 
   socket.on(EVENT.INITIALIZE, ({ roomId: requestedRoomId }: { roomId: string | null }) => {
     // Client wants to init a new game
-    updateModel(model, { type: 'Init', socketId: socket.id })
+    const game = model[0]
+    updateModel(model, { type: 'Init', playerId: socket.id })
 
     // Emit that game is ready
     io.emit(EVENT.SELECT_GAME, {
-      state: model.state,
+      state: game.state,
       // Should probably more like: findRoomId(roomId) || createNewRoom(uuidv4())
       roomId: requestedRoomId || [].length > 0 || '',
       settings: {
@@ -153,13 +180,15 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   })
 
   socket.on(EVENT.READY, (input: ReadyInput) => {
-    const allPlayersAreReady = true // Todo: Check if everyone in the room are ready
+    updateModel(model, { type: 'PlayerIsReady', playerId: input.playerId })
+    console.log(JSON.stringify(model, null, 2))
+    io.emit(EVENT.JOIN_ROOM, { state: model[0].state, roomId: input.roomId, players: model[0].players })
 
-    if (allPlayersAreReady) {
-      updateModel(model, { type: 'NewGame', socketId: socket.id })
+    if (model[0].players.every((player) => player.ready === true)) {
+      updateModel(model, { type: 'NewGame', playerId: socket.id, roomId: input.roomId })
     }
 
-    if (model.state === State.Playing && model.players.length >= 1) {
+    if (model[0].state === State.Playing && model[0].players.length >= 1) {
       gameLoop()
     } else {
       updateModel(model, { type: 'Loading' })
@@ -167,6 +196,11 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   })
 
   socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
+    const game = model[0]
+    if (game.state !== State.Playing) {
+      return
+    }
+
     const parsedKeyDown = parseKeyDown(keyDown.toUpperCase())
     if (parsedKeyDown !== 'ILLIGAL_KEY') {
       updateModel(model, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
@@ -176,17 +210,18 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   })
 
   socket.on(EVENT.EXIT_GAME, () => {
-    // Todo: This won't fly, need to do a players.filter() instead
-    updateModel(model, { type: 'Init', socketId: socket.id })
+    // Todo: What should happen? Respawn in same game or send to lobby or throw out of lobby?
+    updateModel(model, { type: 'Disconnect', playerId: socket.id })
   })
 
   socket.on(EVENT.DISCONNECT, () => {
-    updateModel(model, { type: 'Disconnect', socketId: socket.id })
+    updateModel(model, { type: 'Disconnect', playerId: socket.id })
   })
 })
 
 function gameLoop() {
-  if (model.state === State.Playing && model.players.length > 0) {
+  const game = model[0]
+  if (game.state === State.Playing && game.players.length > 0) {
     setTimeout(gameLoop, TICK_LENGTH_MS)
   } else {
     updateModel(model, { type: 'Loading' })
@@ -196,14 +231,14 @@ function gameLoop() {
   const delta = (nowClock - loop.previousClock) / 1000
 
   // Game updates
-  for (let index = 0; index < model.players.length; index++) {
-    const player = model.players[index]
+  for (let index = 0; index < game.players.length; index++) {
+    const player = game.players[index]
     updateModel(model, { type: 'UpdatePlayer', player })
     updateModel(model, { type: 'CheckForCollision', player })
   }
 
   // Then emit
-  io.emit(EVENT.GAME_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
+  io.emit(EVENT.GAME_UPDATE, { state: game.state, players: game.players, fruit: game.fruit })
 
   if (loop.debug) {
     console.debug(
