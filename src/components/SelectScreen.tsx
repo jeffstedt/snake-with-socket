@@ -61,7 +61,7 @@ export default function SelectScreen({ input, setInput, settings, roomId, joinRo
     <div className="Section Gap-1">
       <div className="Input-wrapper Section Gap-2">
         <div className="Section Gap-1">
-          <h3>Nickname</h3>
+          <h4>Nickname</h4>
           <input
             className={input.name.length > 0 ? 'active' : ''}
             type="text"
@@ -70,7 +70,7 @@ export default function SelectScreen({ input, setInput, settings, roomId, joinRo
           />
         </div>
         <div className="Section Gap-1">
-          <h3>Color</h3>
+          <h4>Color</h4>
           <div className="Colors-wrapper">
             {Object.entries(settings.color)
               .filter(([, color]) => color !== Color.Red)
