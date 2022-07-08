@@ -89,7 +89,7 @@ export interface Error extends Game {
 }
 
 export interface Input {
-  color: Color | null
+  color: Color
   name: string
 }
 

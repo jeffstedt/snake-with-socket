@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import SelectScreen from 'components/SelectScreen'
 import Game from 'components/Game'
 import WaitingRoom from 'components/WaitingRoom'
+import Logo from 'components/Logo'
 
 import {
   Player,
@@ -21,13 +22,14 @@ import {
 } from 'shared-types'
 
 function App() {
+  const defaultColor = Color.Green
   const [socketStatus, setSocketStatus] = useState<State | 'Disconnected'>(State.Disconnected)
   const [socketId, setSocektId] = useState<string | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [fruit, setFruit] = useState<Fruit | null>(null)
   const [settings, setSettings] = useState<Settings | null>(null)
   const [roomId, setRoomId] = useState<string | undefined>(undefined)
-  const [input, setInput] = useState<Input>({ color: null, name: '' })
+  const [input, setInput] = useState<Input>({ color: defaultColor, name: '' })
 
   useEffect(() => {
     // Connected to server
@@ -88,8 +90,6 @@ function App() {
     return [...acceptedArrowKeys, ...acceptedCharacterKeys].map((x) => x.toString()).includes(key)
   }
 
-  const defaultColor = Color.Blue
-
   function createRoom({ color, name }: Input) {
     const payload: CreateRoomInput = { playerId: socket.id, color: color || defaultColor, name }
     socket.emit(EVENT.CREATE_ROOM, payload)
@@ -115,7 +115,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>-Snake logo-</h1>
+      {settings && <Logo settings={settings} color={input.color} />}
       {socketStatus === State.Loading || socketStatus === State.Init ? (
         <div>Loading...</div>
       ) : socketStatus === State.Disconnected ? (

@@ -81,5 +81,5 @@ export default function Canvas({ players, fruit, settings }: Props) {
     // eslint-disable-next-line
   }, [players, fruit]) // Draw on incoming emited changes
 
-  return <canvas width={`${canvasSize}px`} height={`${canvasSize}px`} ref={canvasRef} />
+  return <canvas className="Canvas" width={`${canvasSize}px`} height={`${canvasSize}px`} ref={canvasRef} />
 }
