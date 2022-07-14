@@ -39,40 +39,36 @@ type Msg =
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'CheckForCollision'; player: Player }
 
-function updateGames(existingGames: Model, newGameModel: Game): Model {
+function updateModel(prevModel: Model, msg: Msg) {
+  const game = model[0] // Todo: How do we determine which game to update?
+
   // Todo: Instead of iterating all games, we should be able to cherry pick the game we want to update
-  return existingGames.map((game) => (game.roomId === newGameModel.roomId ? newGameModel : game))
+  model = prevModel.map((existingGame) => (existingGame.roomId === game.roomId ? updateGame(game, msg) : existingGame))
 }
 
-function updateModel(prevModel: Model, msg: Msg) {
-  const game = prevModel[0]
+function updateGame(game: Game, msg: Msg): Game {
   switch (msg.type) {
     case 'Init':
-      model = updateGames(prevModel, { ...game, state: State.Select })
-      break
+      return { ...game, state: State.Select }
     case 'NewPlayer':
-      model = updateGames(prevModel, {
+      return {
         ...game,
         roomId: msg.roomId,
         state: State.WaitingRoom,
         players: game.players.concat(createPlayer(msg.playerId, msg.roomId, msg.input.color, msg.input.name)),
-      })
-      break
+      }
     case 'NewGame':
-      model = updateGames(prevModel, { ...game, roomId: game.roomId, state: State.Playing, fruit: createFruit() })
-      break
+      return { ...game, roomId: game.roomId, state: State.Playing, fruit: createFruit() }
     case 'Playing':
-      model = updateGames(prevModel, { ...game, state: State.Playing })
-      break
+      return { ...game, state: State.Playing }
     case 'Disconnect':
-      model = updateGames(prevModel, {
+      return {
         ...game,
         state: State.Select,
         players: game.players.filter((player) => player.id !== msg.playerId),
-      })
-      break
+      }
     case 'UpdatePlayerDirection':
-      model = updateGames(prevModel, {
+      return {
         ...game,
         state: State.Playing,
         players: game.players.map((player) =>
@@ -83,10 +79,9 @@ function updateModel(prevModel: Model, msg: Msg) {
               }
             : player
         ),
-      })
-      break
+      }
     case 'PlayerIsReady':
-      model = updateGames(prevModel, {
+      return {
         ...game,
         state: State.WaitingRoom,
         players: game.players.map((player) =>
@@ -97,10 +92,9 @@ function updateModel(prevModel: Model, msg: Msg) {
               }
             : player
         ),
-      })
-      break
+      }
     case 'UpdatePlayer':
-      model = updateGames(prevModel, {
+      return {
         ...game,
         state: State.Playing,
         players: game.players.map((player) =>
@@ -114,30 +108,26 @@ function updateModel(prevModel: Model, msg: Msg) {
             : player
         ),
         fruit: updateFruit(msg.player, game.fruit),
-      })
-      break
+      }
     case 'CheckForCollision':
       if (
         msg.player.positions.some(
           (tailCell) => tailCell.x === msg.player.position.x && tailCell.y === msg.player.position.y
         )
       ) {
-        model = updateGames(prevModel, {
+        return {
           ...game,
           state: State.Playing,
           players: [createPlayer(msg.player.id, msg.player.roomId, msg.player.color, msg.player.name)],
           fruit: createFruit(),
-        })
+        }
       } else {
-        model = prevModel
+        return game
       }
-      break
     case 'Loading':
-      model = updateGames(prevModel, { ...game, state: State.Loading })
-      break
+      return { ...game, state: State.Loading }
     default:
-      model = prevModel
-      break
+      return game
   }
 }
 
