@@ -18,7 +18,7 @@ export default function SelectScreen({ input, setInput, settings, roomId, joinRo
   const currentRoomId = roomId || paramId
 
   useEffect(() => {
-    if (currentRoomId) navigate(`/${currentRoomId}`)
+    if (currentRoomId) navigate(`/game/${currentRoomId}`)
   }, [currentRoomId, navigate])
 
   function initCreateRoom(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -46,7 +46,7 @@ export default function SelectScreen({ input, setInput, settings, roomId, joinRo
       <button
         key={colorValue}
         onClick={(event) => {
-          event?.preventDefault()
+          event.preventDefault()
           setInput({ ...input, color: colorValue })
         }}
         style={{ backgroundColor: colorValue }}

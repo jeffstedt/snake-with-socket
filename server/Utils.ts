@@ -1,7 +1,7 @@
 import { PLAYER_SIZE, CANVAS_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
 import { Room, PlayerDirection, Fruit, ArrowKey, CharacterKey, Color, State } from '../src/shared-types'
 import { Player } from '../src/shared-types'
-import { v4 as uuidv4 } from 'uuid'
+import { v4 as randomUUID } from 'uuid'
 
 const avalaibleDirections: PlayerDirection[] = [
   PlayerDirection.Up,
@@ -13,7 +13,7 @@ const avalaibleDirections: PlayerDirection[] = [
 const defaultModel = (): Room[] => [
   {
     state: State.Loading,
-    roomId: uuidv4(),
+    id: randomUUID(),
     players: [],
     fruit: createFruit(),
   },

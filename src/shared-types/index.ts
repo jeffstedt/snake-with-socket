@@ -1,11 +1,13 @@
+// Todo: Breakout EVENT into two seperate: ROOM_EVENT, PLAYER_EVENT
 export enum EVENT {
   CONNECT = 'connect', // This keyword is socket io magic
   DISCONNECT = 'disconnect',
-  INITIALIZE = 'initialize',
+  GAME_SETTINGS = 'game_settings',
+  INIT_SELECT_SCREEN = 'init_select_screen',
+  SELECT_SCREEN = 'select_screen',
   JOIN_ROOM = 'join_room',
   CREATE_ROOM = 'create_room',
-  SELECT_GAME = 'select_game',
-  READY = 'ready',
+  PLAYER_READY = 'player_ready',
   DIRECTION_UPDATE = 'direction_update',
   GAME_UPDATE = 'game_update',
   EXIT_GAME = 'exit_game',

@@ -20,6 +20,7 @@ import {
   ArrowKey,
   CharacterKey,
 } from 'shared-types'
+import Loading from 'components/Loading'
 
 function App() {
   const defaultColor = Color.Green
@@ -37,17 +38,13 @@ function App() {
       setSocketStatus(State.Loading)
       setSocektId(socket.id)
 
-      socket.emit(EVENT.INITIALIZE, { roomId: roomId })
+      socket.on(EVENT.GAME_SETTINGS, ({ settings }: { settings: Settings }) => setSettings(settings))
 
       // We have handshake, retrieve game settings and go into select screen
-      socket.on(
-        EVENT.SELECT_GAME,
-        ({ state, roomId, settings }: { state: State; roomId: string; settings: Settings }) => {
-          setSocketStatus(state)
-          setSettings(settings)
-          setRoomId(roomId)
-        }
-      )
+      socket.on(EVENT.SELECT_SCREEN, ({ state, roomId }: { state: State; roomId: string }) => {
+        setSocketStatus(state)
+        setRoomId(roomId)
+      })
 
       // Listen to game updates and save them in our state
       socket.on(EVENT.GAME_UPDATE, ({ state, players, fruit }: { state: State; players: Player[]; fruit: Fruit }) => {
@@ -102,31 +99,62 @@ function App() {
 
   function ready(playerId: string, roomId: string) {
     const payload: ReadyInput = { playerId, roomId }
-    socket.emit(EVENT.READY, payload)
+    socket.emit(EVENT.PLAYER_READY, payload)
   }
 
   function exitGame() {
     socket.emit(EVENT.EXIT_GAME)
   }
 
-  const clientHasServerConfigs = socketId && settings
-  const isConnectedToServer =
-    socketStatus === State.Playing || socketStatus === State.Select || socketStatus === State.WaitingRoom
+  function askForSelectScreen(roomId: string | null) {
+    socket.emit(EVENT.INIT_SELECT_SCREEN, { roomId })
+  }
+
+  // Early exit if disconnected
+  if (socketStatus === State.Disconnected) {
+    return (
+      <div className="App">
+        <div>Disconnected from server</div>
+      </div>
+    )
+  }
+
+  // Wait on settings...
+  if (!settings || !socketId) {
+    return (
+      <div className="App">
+        <div>Retriving settings...</div>
+      </div>
+    )
+  }
 
   return (
     <div className="App">
-      {settings && <Logo settings={settings} color={input.color} />}
-      <pre>{socketId}</pre>
-      {socketStatus === State.Loading || socketStatus === State.Init ? (
-        <div>Loading...</div>
-      ) : socketStatus === State.Disconnected ? (
-        <div>Disconnected from server</div>
-      ) : isConnectedToServer && clientHasServerConfigs ? (
-        <BrowserRouter>
-          <Routes>
-            <Route
-              path="/"
-              element={
+      {<Logo settings={settings} color={input.color} />}
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Loading askForSelectScreen={askForSelectScreen} roomId={roomId} />} />
+          <Route path="/:requestedId" element={<Loading askForSelectScreen={askForSelectScreen} roomId={roomId} />} />
+          <Route
+            path="/game/:id"
+            element={
+              socketStatus === State.Loading ? (
+                <Loading askForSelectScreen={askForSelectScreen} roomId={roomId} />
+              ) : socketStatus === State.Select ? (
+                <SelectScreen input={input} setInput={setInput} settings={settings} joinRoom={joinRoom} />
+              ) : socketStatus === State.WaitingRoom ? (
+                <WaitingRoom socketId={socketId} settings={settings} players={players} ready={ready} />
+              ) : State.Playing ? (
+                <Game socketId={socketId} settings={settings} players={players} fruit={fruit} exitGame={exitGame} />
+              ) : (
+                <div>Error: Unexpected id: {roomId}</div>
+              )
+            }
+          />
+          <Route
+            path="/new-game/*"
+            element={
+              State.Select ? (
                 <SelectScreen
                   input={input}
                   setInput={setInput}
@@ -134,28 +162,14 @@ function App() {
                   roomId={roomId}
                   createRoom={createRoom}
                 />
-              }
-            />
-            <Route
-              path="/:id"
-              element={
-                // Todo: How can this be cleaner..
-                socketStatus === State.Select ? (
-                  <SelectScreen input={input} setInput={setInput} settings={settings} joinRoom={joinRoom} />
-                ) : socketStatus === State.WaitingRoom ? (
-                  <WaitingRoom socketId={socketId} settings={settings} players={players} ready={ready} />
-                ) : State.Playing ? (
-                  <Game socketId={socketId} settings={settings} players={players} fruit={fruit} exitGame={exitGame} />
-                ) : (
-                  <div>Error: Unexpected id: {roomId}</div>
-                )
-              }
-            />
-          </Routes>
-        </BrowserRouter>
-      ) : (
-        <div>Error: Unexpected state {socketStatus}</div>
-      )}
+              ) : (
+                <Loading askForSelectScreen={askForSelectScreen} roomId={roomId} />
+              )
+            }
+          />
+          <Route path="/*" element={<div>404, could not find page</div>} />
+        </Routes>
+      </BrowserRouter>
     </div>
   )
 }
