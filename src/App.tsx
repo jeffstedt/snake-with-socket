@@ -152,7 +152,7 @@ function App() {
             }
           />
           <Route
-            path="/new-game/*"
+            path="/new-game"
             element={
               State.Select ? (
                 <SelectScreen
