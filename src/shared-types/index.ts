@@ -53,7 +53,7 @@ export enum State {
 export type Rooms = Room[]
 
 export type Room = {
-  roomId: string
+  id: string
   state: Loading | Init | Select | WaitingRoom | Playing | Error
   players: Player[]
   fruit: Fruit

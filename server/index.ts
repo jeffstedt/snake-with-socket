@@ -47,7 +47,7 @@ function updateRooms(prevRooms: Room[], msg: Msg) {
   const room = rooms[0] // Todo: How do we determine which room to update?
 
   // Todo: Instead of iterating all games, we should be able to cherry pick the room we want to update
-  rooms = prevRooms.map((existingGame) => (existingGame.roomId === room.roomId ? updateGame(room, msg) : existingGame))
+  rooms = prevRooms.map((existingRoom) => (existingRoom.id === room.id ? updateGame(room, msg) : existingRoom))
 }
 
 function updateGame(room: Room, msg: Msg): Room {
@@ -57,12 +57,12 @@ function updateGame(room: Room, msg: Msg): Room {
     case 'NewPlayer':
       return {
         ...room,
-        roomId: msg.roomId,
+        id: msg.roomId,
         state: State.WaitingRoom,
         players: room.players.concat(createPlayer(msg.playerId, msg.roomId, msg.input.color, msg.input.name)),
       }
     case 'NewGame':
-      return { ...room, roomId: room.roomId, state: State.Playing, fruit: createFruit() }
+      return { ...room, id: room.id, state: State.Playing, fruit: createFruit() }
     case 'Playing':
       return { ...room, state: State.Playing }
     case 'Disconnect':
@@ -140,11 +140,11 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   console.info('New connection established:', socket.id)
 
   socket.on(EVENT.CREATE_ROOM, (input: CreateRoomInput) => {
-    const newRoomId = rooms[0].roomId
+    const newRoomId = rooms[0].id
     updateRooms(rooms, { type: 'NewPlayer', playerId: socket.id, roomId: newRoomId, input })
     const room = rooms[0]
 
-    io.emit(EVENT.JOIN_ROOM, { state: room.state, roomId: room.roomId, players: room.players })
+    io.emit(EVENT.JOIN_ROOM, { state: room.state, roomId: room.id, players: room.players })
   })
 
   socket.on(EVENT.JOIN_ROOM, (input: JoinRoomInput) => {
