@@ -50,9 +50,9 @@ export enum State {
   Disconnected = 'Disconnected',
 }
 
-export type Model = Game[]
+export type Rooms = Room[]
 
-export type Game = {
+export type Room = {
   roomId: string
   state: Loading | Init | Select | WaitingRoom | Playing | Error
   players: Player[]
