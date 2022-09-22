@@ -19,7 +19,7 @@ const defaultModel = (): Room[] => [
   },
 ]
 
-const createPlayer = (id: string, roomId: string, color: Color, name: string): Player => ({
+const createPlayer = (id: UUID, roomId: UUID, color: Color, name: string): Player => ({
   id,
   roomId,
   ready: false,

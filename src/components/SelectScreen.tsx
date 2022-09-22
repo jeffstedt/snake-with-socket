@@ -8,7 +8,7 @@ interface Props {
   setInput: React.Dispatch<React.SetStateAction<Input>>
   settings: Settings
   roomId?: string
-  joinRoom?: (roomId: string, input: Input) => void
+  joinRoom?: (roomId: UUID, input: Input) => void
   createRoom?: (input: Input) => void
 }
 

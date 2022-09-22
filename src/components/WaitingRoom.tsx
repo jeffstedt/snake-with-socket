@@ -4,10 +4,10 @@ import { useState } from 'react'
 import ReadyBoard from './ReadyBoard'
 
 interface Props {
-  socketId: string
+  socketId: UUID
   settings: Settings
   players: Player[]
-  ready: (playerId: string, roomId: string) => void
+  ready: (playerId: UUID, roomId: UUID) => void
 }
 
 function WaitingRoom({ socketId, settings, players, ready }: Props) {

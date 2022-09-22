@@ -2,8 +2,8 @@ import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 
 interface Props {
-  askForSelectScreen: (roomId: string | null) => void
-  roomId: string | undefined
+  askForSelectScreen: (roomId: UUID | null) => void
+  roomId: UUID | undefined
 }
 
 export default function Loading({ askForSelectScreen, roomId }: Props) {
@@ -20,6 +20,7 @@ export default function Loading({ askForSelectScreen, roomId }: Props) {
       navigate(`/new-game`)
       askForSelectScreen(null)
     }
+    // eslint-disable-next-line
   }, [currentRoomId])
 
   return <div>Loading...</div>

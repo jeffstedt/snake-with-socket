@@ -55,7 +55,7 @@ export enum State {
 export type Rooms = Room[]
 
 export type Room = {
-  id: string
+  id: UUID
   state: Loading | Init | Select | WaitingRoom | Playing | Error
   players: Player[]
   fruit: Fruit
@@ -74,21 +74,21 @@ export interface Input {
 }
 
 export interface CreateRoomInput {
-  playerId: string
+  playerId: UUID
   name: string
   color: Color
 }
 
 export interface JoinRoomInput {
-  roomId: string
-  playerId: string
+  roomId: UUID
+  playerId: UUID
   name: string
   color: Color
 }
 
 export interface ReadyInput {
-  playerId: string
-  roomId: string
+  playerId: UUID
+  roomId: UUID
 }
 
 export type NewPlayerInput = CreateRoomInput
@@ -113,8 +113,8 @@ export interface Fruit {
 }
 
 export interface Player {
-  id: string
-  roomId: string
+  id: UUID
+  roomId: UUID
   ready: boolean
   name: string
   color: Color

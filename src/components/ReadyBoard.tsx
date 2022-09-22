@@ -3,7 +3,7 @@ import hexRgb from 'hex-rgb'
 
 interface Props {
   players: Player[]
-  socketId: string
+  socketId: UUID
 }
 
 export default function ReadyBoard({ players, socketId }: Props) {

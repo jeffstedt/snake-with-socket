@@ -25,14 +25,14 @@ let debug = { log: true, tickCount: 0, previousClock: hourTimeMs(), env: process
 let rooms: Room[] = defaultModel()
 
 type Msg =
-  | { type: 'InitSelectScreen'; playerId: string }
-  | { type: 'NewPlayer'; playerId: string; roomId: string; input: NewPlayerInput }
-  | { type: 'StartGame'; playerId: string; roomId: string }
+  | { type: 'InitSelectScreen'; playerId: UUID }
+  | { type: 'NewPlayer'; playerId: UUID; roomId: UUID; input: NewPlayerInput }
+  | { type: 'StartGame'; playerId: UUID; roomId: UUID }
   | { type: 'Playing' }
   | { type: 'Loading' }
-  | { type: 'Disconnect'; playerId: string }
-  | { type: 'PlayerIsReady'; playerId: string }
-  | { type: 'UpdatePlayerDirection'; playerId: string; direction: PlayerDirection }
+  | { type: 'Disconnect'; playerId: UUID }
+  | { type: 'PlayerIsReady'; playerId: UUID }
+  | { type: 'UpdatePlayerDirection'; playerId: UUID; direction: PlayerDirection }
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'CheckForCollision'; player: Player }
 
@@ -155,7 +155,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     io.emit(EVENT.JOIN_ROOM, { state: room.state, roomId: input.roomId, players: room.players })
   })
 
-  socket.on(EVENT.INIT_SELECT_SCREEN, ({ roomId: requestedRoomId }: { roomId: string | null }) => {
+  socket.on(EVENT.INIT_SELECT_SCREEN, ({ roomId: requestedRoomId }: { roomId: UUID | null }) => {
     // Client wants to either create room or join one
     const room = getRoom(rooms, clientId)
     const roomIsPlaying = room?.state === State.Playing
@@ -191,7 +191,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     }
   })
 
-  socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
+  socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: UUID; keyDown: string }) => {
     const room = rooms[0]
     if (room.state !== State.Playing) {
       return

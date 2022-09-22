@@ -41,7 +41,7 @@ function App() {
       socket.on(EVENT.GAME_SETTINGS, ({ settings }: { settings: Settings }) => setSettings(settings))
 
       // We have handshake, retrieve game settings and go into select screen
-      socket.on(EVENT.SELECT_SCREEN, ({ state, roomId }: { state: State; roomId: string }) => {
+      socket.on(EVENT.SELECT_SCREEN, ({ state, roomId }: { state: State; roomId: UUID }) => {
         setSocketStatus(state)
         setRoomId(roomId)
       })
@@ -92,12 +92,12 @@ function App() {
     socket.emit(EVENT.CREATE_ROOM, payload)
   }
 
-  function joinRoom(roomId: string, { color, name }: Input) {
+  function joinRoom(roomId: UUID, { color, name }: Input) {
     const payload: JoinRoomInput = { roomId, playerId: socket.id, color: color || defaultColor, name }
     socket.emit(EVENT.JOIN_ROOM, payload)
   }
 
-  function ready(playerId: string, roomId: string) {
+  function ready(playerId: UUID, roomId: UUID) {
     const payload: ReadyInput = { playerId, roomId }
     socket.emit(EVENT.PLAYER_READY, payload)
   }
@@ -106,7 +106,7 @@ function App() {
     socket.emit(EVENT.EXIT_GAME)
   }
 
-  function askForSelectScreen(roomId: string | null) {
+  function askForSelectScreen(roomId: UUID | null) {
     socket.emit(EVENT.INIT_SELECT_SCREEN, { roomId })
   }
 
