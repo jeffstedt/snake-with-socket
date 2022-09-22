@@ -21,7 +21,7 @@ process.title = 'snake-with-socket'
 const httpServer = createServer()
 const io = new Server(httpServer)
 
-let loop = { tick: 0, previousClock: hourTimeMs(), debug: process.env.APP_ENV === ENV.DEVELOPMENT }
+let debug = { log: true, tickCount: 0, previousClock: hourTimeMs(), env: process.env.APP_ENV === ENV.DEVELOPMENT }
 let rooms: Room[] = defaultModel()
 
 type Msg =
@@ -135,8 +135,7 @@ function updateRoom(room: Room, msg: Msg): Room {
 // Server Logic
 io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   const clientId = socket.id
-
-  console.info('New client connected:', clientId)
+  log({ message: 'New client connected:', clientId })
 
   // First thing: Emit game settings
   io.emit(EVENT.GAME_SETTINGS, { settings: GAME_SETTINGS })
@@ -166,7 +165,6 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     updateRooms(rooms, { type: 'InitSelectScreen', playerId: clientId })
 
     // Todo: Client doesnt respect our payload
-    // console.log({ requestedRoomId, requestedRoomIsAvailable })
     if (requestedRoomIsAvailable) {
       // Put player in select screen with the option to JOIN ROOM
       io.emit(EVENT.SELECT_SCREEN, { state: room.state, roomId: requestedRoomId })
@@ -178,7 +176,8 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
 
   socket.on(EVENT.PLAYER_READY, (input: ReadyInput) => {
     updateRooms(rooms, { type: 'PlayerIsReady', playerId: input.playerId })
-    console.log(JSON.stringify(rooms, null, 2))
+    log(rooms)
+
     io.emit(EVENT.JOIN_ROOM, { state: rooms[0].state, roomId: input.roomId, players: rooms[0].players })
 
     if (rooms[0].players.every((player) => player.ready === true)) {
@@ -186,7 +185,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     }
 
     if (rooms[0].state === State.Playing && rooms[0].players.length >= 1) {
-      gameLoop()
+      tick()
     } else {
       updateRooms(rooms, { type: 'Loading' })
     }
@@ -202,7 +201,7 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
     if (parsedKeyDown !== 'ILLIGAL_KEY') {
       updateRooms(rooms, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
     } else {
-      loop.debug && console.info('Illigal key')
+      log({ message: 'Illigal key' })
     }
   })
 
@@ -216,16 +215,16 @@ io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
   })
 })
 
-function gameLoop() {
+function tick() {
   const room = rooms[0]
   if (room.state === State.Playing && room.players.length > 0) {
-    setTimeout(gameLoop, TICK_LENGTH_MS)
+    setTimeout(tick, TICK_LENGTH_MS)
   } else {
     updateRooms(rooms, { type: 'Loading' })
   }
 
   const nowClock = hourTimeMs()
-  const delta = (nowClock - loop.previousClock) / 1000
+  const delta = (nowClock - debug.previousClock) / 1000
 
   // Room updates
   for (let index = 0; index < room.players.length; index++) {
@@ -237,26 +236,20 @@ function gameLoop() {
   // Then emit
   io.emit(EVENT.GAME_UPDATE, { state: room.state, players: room.players, fruit: room.fruit })
 
-  if (loop.debug) {
-    console.debug(
-      JSON.stringify(
-        {
-          delta,
-          tick: loop.tick,
-          cpu: process.cpuUsage(),
-          upTime: getHHMMSSduration(process.uptime()),
-          pid: process.pid,
-          rooms,
-        },
-        null,
-        2
-      )
-    )
-  }
+  log({
+    delta,
+    tickCount: debug.tickCount,
+    cpu: process.cpuUsage(),
+    upTime: getHHMMSSduration(process.uptime()),
+    pid: process.pid,
+    rooms,
+  })
 
-  loop.previousClock = nowClock
-  loop.tick++
+  debug.previousClock = nowClock
+  debug.tickCount++
 }
+
+const log = (object: Object) => debug.log && console.debug(JSON.stringify(object, null, 2))
 
 console.info('Server now running on port', SERVER_PORT)
 httpServer.listen(SERVER_PORT)
