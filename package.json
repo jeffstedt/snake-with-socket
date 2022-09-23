@@ -1,6 +1,6 @@
 {
   "name": "snake-with-socket",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.14.1",
@@ -21,7 +21,7 @@
   },
   "scripts": {
     "dev": "APP_ENV=DEVELOPMENT npm run server & npm run client",
-    "server": "ts-node-dev server/index.ts",
+    "server": "APP_ENV=DEVELOPMENT ts-node-dev --files server/index.ts",
     "client": "PORT=3000 react-scripts start",
     "build": "APP_ENV=PRODUCTION react-scripts build",
     "test": "echo No avalaible tests"

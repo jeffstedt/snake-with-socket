@@ -1,6 +1,6 @@
 # Snake game with socket.io
 
-![Demo](/220504-screenshot.gif)
+![Demo](/220923-screenshot.gif)
 
 Install
 

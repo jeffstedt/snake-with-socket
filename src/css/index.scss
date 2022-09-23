@@ -186,6 +186,7 @@ input:focus {
 }
 
 .Snackbar {
+  word-break: break-word;
   visibility: hidden;
   background-color: $color-dark-transparent-light;
   color: $color-white;

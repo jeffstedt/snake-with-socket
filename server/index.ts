@@ -1,16 +1,14 @@
 import { createServer } from 'http'
 import { Server, Socket } from 'socket.io'
-import { SERVER_PORT, ENV, TICK_LENGTH_MS, CANVAS_SIZE, CELL_SIZE, PLAYER_NAME_MAX_LENGTH } from './Constants'
+import { SERVER_PORT, ENV, TICK_LENGTH_MS, GAME_SETTINGS } from './Constants'
 import { defaultModel, hourTimeMs, createPlayer, createFruit, parseKeyDown, getHHMMSSduration } from './Utils'
 import { updatePoints, updateFruit, updatePlayerPosition, updateTailPositions, updatePlayerDirection } from './Update'
-import { v4 as uuidv4 } from 'uuid'
 
 import {
+  Room,
   EVENT,
   Player,
-  Model,
   PlayerDirection,
-  Color,
   State,
   NewPlayerInput,
   CreateRoomInput,
@@ -23,50 +21,58 @@ process.title = 'snake-with-socket'
 const httpServer = createServer()
 const io = new Server(httpServer)
 
-let loop = { tick: 0, previousClock: hourTimeMs(), debug: process.env.APP_ENV === ENV.DEVELOPMENT }
-let model: Model = defaultModel()
+let debug = { log: true, tickCount: 0, previousClock: hourTimeMs(), env: process.env.APP_ENV === ENV.DEVELOPMENT }
+let rooms: Room[] = defaultModel()
 
 type Msg =
-  | { type: 'Init'; socketId: string }
-  | { type: 'NewPlayer'; socketId: string; roomId: string; input: NewPlayerInput }
-  | { type: 'NewGame'; socketId: string }
+  | { type: 'InitSelectScreen'; playerId: UUID }
+  | { type: 'NewPlayer'; playerId: UUID; roomId: UUID; input: NewPlayerInput }
+  | { type: 'StartGame'; playerId: UUID; roomId: UUID }
   | { type: 'Playing' }
   | { type: 'Loading' }
-  | { type: 'Disconnect'; socketId: string }
-  | { type: 'UpdatePlayerDirection'; playerId: string; direction: PlayerDirection }
+  | { type: 'Disconnect'; playerId: UUID }
+  | { type: 'PlayerIsReady'; playerId: UUID }
+  | { type: 'UpdatePlayerDirection'; playerId: UUID; direction: PlayerDirection }
   | { type: 'UpdatePlayer'; player: Player }
   | { type: 'CheckForCollision'; player: Player }
 
-function updateModel(prevModel: Model, msg: Msg) {
+function getRoom(rooms: Room[], playerId: UUID): Room | null {
+  return rooms.find((room) => room.players.some((player) => player.id === playerId)) || null
+}
+
+function updateRooms(prevRooms: Room[], msg: Msg) {
+  const room = rooms[0]
+
+  // Todo: Instead of iterating all games, we should be able to cherry pick the room we want to update
+  rooms = prevRooms.map((existingRoom) => (existingRoom.id === room.id ? updateRoom(room, msg) : existingRoom))
+}
+
+function updateRoom(room: Room, msg: Msg): Room {
   switch (msg.type) {
-    case 'Init':
-      model = { ...defaultModel(), state: State.Select }
-      break
+    case 'InitSelectScreen':
+      return { ...room, state: State.Select }
     case 'NewPlayer':
-      model = {
-        ...prevModel,
+      return {
+        ...room,
+        id: msg.roomId,
         state: State.WaitingRoom,
-        players: prevModel.players.concat(createPlayer(msg.socketId, msg.roomId, msg.input.color, msg.input.name)),
+        players: room.players.concat(createPlayer(msg.playerId, msg.roomId, msg.input.color, msg.input.name)),
       }
-      break
-    case 'NewGame':
-      model = { ...prevModel, state: State.Playing, fruit: createFruit() }
-      break
+    case 'StartGame':
+      return { ...room, id: room.id, state: State.Playing, fruit: createFruit() }
     case 'Playing':
-      model = { ...prevModel, state: State.Playing }
-      break
+      return { ...room, state: State.Playing }
     case 'Disconnect':
-      model = {
-        ...prevModel,
-        state: State.Loading,
-        players: prevModel.players.filter((player) => player.id !== msg.socketId),
+      return {
+        ...room,
+        state: State.Select,
+        players: room.players.filter((player) => player.id !== msg.playerId),
       }
-      break
     case 'UpdatePlayerDirection':
-      model = {
-        ...prevModel,
+      return {
+        ...room,
         state: State.Playing,
-        players: prevModel.players.map((player) =>
+        players: room.players.map((player) =>
           player.id === msg.playerId
             ? {
                 ...player,
@@ -75,156 +81,175 @@ function updateModel(prevModel: Model, msg: Msg) {
             : player
         ),
       }
-      break
+    case 'PlayerIsReady':
+      return {
+        ...room,
+        state: State.WaitingRoom,
+        players: room.players.map((player) =>
+          player.id === msg.playerId
+            ? {
+                ...player,
+                ready: !player.ready,
+              }
+            : player
+        ),
+      }
     case 'UpdatePlayer':
-      model = {
-        ...prevModel,
+      return {
+        ...room,
         state: State.Playing,
-        players: prevModel.players.map((player) =>
+        players: room.players.map((player) =>
           player.id === msg.player.id
             ? {
                 ...player,
                 position: updatePlayerPosition(player.position, player.direction),
-                positions: updateTailPositions(player, prevModel.fruit),
-                points: updatePoints(player, prevModel.fruit),
+                positions: updateTailPositions(player, room.fruit),
+                points: updatePoints(player, room.fruit),
               }
             : player
         ),
-        fruit: updateFruit(msg.player, prevModel.fruit),
+        fruit: updateFruit(msg.player, room.fruit),
       }
-      break
     case 'CheckForCollision':
       if (
         msg.player.positions.some(
           (tailCell) => tailCell.x === msg.player.position.x && tailCell.y === msg.player.position.y
         )
       ) {
-        model = {
-          ...prevModel,
+        return {
+          ...room,
           state: State.Playing,
           players: [createPlayer(msg.player.id, msg.player.roomId, msg.player.color, msg.player.name)],
           fruit: createFruit(),
         }
       } else {
-        model = prevModel
+        return room
       }
-      break
     case 'Loading':
-      model = { ...prevModel, ...defaultModel }
-      break
+      return { ...room, state: State.Loading }
     default:
-      model = prevModel
-      break
+      return room
   }
 }
 
 // Server Logic
 io.sockets.on(EVENT.CONNECT, (socket: Socket) => {
-  console.info('New connection established:', socket.id)
+  const clientId = socket.id
+  log({ message: 'New client connected:', clientId })
+
+  // First thing: Emit game settings
+  io.emit(EVENT.GAME_SETTINGS, { settings: GAME_SETTINGS })
 
   socket.on(EVENT.CREATE_ROOM, (input: CreateRoomInput) => {
-    const newRoomId = uuidv4().substring(0, 6)
-    updateModel(model, { type: 'NewPlayer', socketId: socket.id, roomId: newRoomId, input })
-    io.emit(EVENT.JOIN_ROOM, { state: model.state, roomId: newRoomId, players: model.players })
+    const newRoomId = rooms[0].id
+    updateRooms(rooms, { type: 'NewPlayer', playerId: clientId, roomId: newRoomId, input })
+    const room = rooms[0]
+
+    io.emit(EVENT.JOIN_ROOM, { state: room.state, roomId: room.id, players: room.players })
   })
 
   socket.on(EVENT.JOIN_ROOM, (input: JoinRoomInput) => {
     // Todo: search for joinRoomId and valdiate before joining
-    updateModel(model, { type: 'NewPlayer', socketId: socket.id, roomId: input.roomId, input })
-    io.emit(EVENT.JOIN_ROOM, { state: model.state, roomId: input.roomId, players: model.players })
+    updateRooms(rooms, { type: 'NewPlayer', playerId: clientId, roomId: input.roomId, input })
+    const room = rooms[0]
+    io.emit(EVENT.JOIN_ROOM, { state: room.state, roomId: input.roomId, players: room.players })
   })
 
-  socket.on(EVENT.INITIALIZE, ({ roomId: requestedRoomId }: { roomId: string | null }) => {
-    // Client wants to init a new game
-    updateModel(model, { type: 'Init', socketId: socket.id })
+  socket.on(EVENT.INIT_SELECT_SCREEN, ({ roomId: requestedRoomId }: { roomId: UUID | null }) => {
+    // Client wants to either create room or join one
+    const room = getRoom(rooms, clientId)
+    const roomIsPlaying = room?.state === State.Playing
+    const roomExists = rooms.some((room) => room.id === requestedRoomId)
+    const requestedRoomIsAvailable = room && roomExists && !roomIsPlaying
 
-    // Emit that game is ready
-    io.emit(EVENT.SELECT_GAME, {
-      state: model.state,
-      // Should probably more like: findRoomId(roomId) || createNewRoom(uuidv4())
-      roomId: requestedRoomId || [].length > 0 || '',
-      settings: {
-        canvasSize: CANVAS_SIZE,
-        cellSize: CELL_SIZE,
-        color: { red: Color.Red, green: Color.Green, blue: Color.Blue, orange: Color.Orange, purple: Color.Purple },
-        playerNameMaxLength: PLAYER_NAME_MAX_LENGTH,
-      },
-    })
-  })
+    updateRooms(rooms, { type: 'InitSelectScreen', playerId: clientId })
 
-  socket.on(EVENT.READY, (input: ReadyInput) => {
-    const allPlayersAreReady = true // Todo: Check if everyone in the room are ready
-
-    if (allPlayersAreReady) {
-      updateModel(model, { type: 'NewGame', socketId: socket.id })
-    }
-
-    if (model.state === State.Playing && model.players.length >= 1) {
-      gameLoop()
+    // Todo: Client doesnt respect our payload
+    if (requestedRoomIsAvailable) {
+      // Put player in select screen with the option to JOIN ROOM
+      io.emit(EVENT.SELECT_SCREEN, { state: room.state, roomId: requestedRoomId })
     } else {
-      updateModel(model, { type: 'Loading' })
+      // Put player in select screen with the option to CREATE ROOM
+      io.emit(EVENT.SELECT_SCREEN, { state: State.Select, roomId: null })
     }
   })
 
-  socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: string; keyDown: string }) => {
+  socket.on(EVENT.PLAYER_READY, (input: ReadyInput) => {
+    updateRooms(rooms, { type: 'PlayerIsReady', playerId: input.playerId })
+    log(rooms)
+
+    io.emit(EVENT.JOIN_ROOM, { state: rooms[0].state, roomId: input.roomId, players: rooms[0].players })
+
+    if (rooms[0].players.every((player) => player.ready === true)) {
+      updateRooms(rooms, { type: 'StartGame', playerId: clientId, roomId: input.roomId })
+    }
+
+    if (rooms[0].state === State.Playing && rooms[0].players.length >= 1) {
+      tick()
+    } else {
+      updateRooms(rooms, { type: 'Loading' })
+    }
+  })
+
+  socket.on(EVENT.DIRECTION_UPDATE, ({ playerId, keyDown }: { playerId: UUID; keyDown: string }) => {
+    const room = rooms[0]
+    if (room.state !== State.Playing) {
+      return
+    }
+
     const parsedKeyDown = parseKeyDown(keyDown.toUpperCase())
     if (parsedKeyDown !== 'ILLIGAL_KEY') {
-      updateModel(model, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
+      updateRooms(rooms, { type: 'UpdatePlayerDirection', playerId: playerId, direction: parsedKeyDown })
     } else {
-      loop.debug && console.info('Illigal key')
+      log({ message: 'Illigal key' })
     }
   })
 
   socket.on(EVENT.EXIT_GAME, () => {
-    // Todo: This won't fly, need to do a players.filter() instead
-    updateModel(model, { type: 'Init', socketId: socket.id })
+    // Todo: What should happen? Respawn in same room or send to lobby or throw out of lobby?
+    updateRooms(rooms, { type: 'Disconnect', playerId: clientId })
   })
 
   socket.on(EVENT.DISCONNECT, () => {
-    updateModel(model, { type: 'Disconnect', socketId: socket.id })
+    updateRooms(rooms, { type: 'Disconnect', playerId: clientId })
   })
 })
 
-function gameLoop() {
-  if (model.state === State.Playing && model.players.length > 0) {
-    setTimeout(gameLoop, TICK_LENGTH_MS)
+function tick() {
+  const room = rooms[0]
+  if (room.state === State.Playing && room.players.length > 0) {
+    setTimeout(tick, TICK_LENGTH_MS)
   } else {
-    updateModel(model, { type: 'Loading' })
+    updateRooms(rooms, { type: 'Loading' })
   }
 
   const nowClock = hourTimeMs()
-  const delta = (nowClock - loop.previousClock) / 1000
+  const delta = (nowClock - debug.previousClock) / 1000
 
-  // Game updates
-  for (let index = 0; index < model.players.length; index++) {
-    const player = model.players[index]
-    updateModel(model, { type: 'UpdatePlayer', player })
-    updateModel(model, { type: 'CheckForCollision', player })
+  // Room updates
+  for (let index = 0; index < room.players.length; index++) {
+    const player = room.players[index]
+    updateRooms(rooms, { type: 'UpdatePlayer', player })
+    updateRooms(rooms, { type: 'CheckForCollision', player })
   }
 
   // Then emit
-  io.emit(EVENT.GAME_UPDATE, { state: model.state, players: model.players, fruit: model.fruit })
+  io.emit(EVENT.GAME_UPDATE, { state: room.state, players: room.players, fruit: room.fruit })
 
-  if (loop.debug) {
-    console.debug(
-      JSON.stringify(
-        {
-          delta,
-          tick: loop.tick,
-          cpu: process.cpuUsage(),
-          upTime: getHHMMSSduration(process.uptime()),
-          pid: process.pid,
-          model,
-        },
-        null,
-        2
-      )
-    )
-  }
+  log({
+    delta,
+    tickCount: debug.tickCount,
+    cpu: process.cpuUsage(),
+    upTime: getHHMMSSduration(process.uptime()),
+    pid: process.pid,
+    rooms,
+  })
 
-  loop.previousClock = nowClock
-  loop.tick++
+  debug.previousClock = nowClock
+  debug.tickCount++
 }
+
+const log = (object: Object) => debug.log && console.debug(JSON.stringify(object, null, 2))
 
 console.info('Server now running on port', SERVER_PORT)
 httpServer.listen(SERVER_PORT)

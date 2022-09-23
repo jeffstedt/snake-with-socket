@@ -1,11 +1,13 @@
+// Todo: Breakout EVENT into two seperate: ROOM_EVENT, PLAYER_EVENT
 export enum EVENT {
   CONNECT = 'connect', // This keyword is socket io magic
   DISCONNECT = 'disconnect',
-  INITIALIZE = 'initialize',
+  GAME_SETTINGS = 'game_settings',
+  INIT_SELECT_SCREEN = 'init_select_screen',
+  SELECT_SCREEN = 'select_screen',
   JOIN_ROOM = 'join_room',
   CREATE_ROOM = 'create_room',
-  SELECT_GAME = 'select_game',
-  READY = 'ready',
+  PLAYER_READY = 'player_ready',
   DIRECTION_UPDATE = 'direction_update',
   GAME_UPDATE = 'game_update',
   EXIT_GAME = 'exit_game',
@@ -50,43 +52,21 @@ export enum State {
   Disconnected = 'Disconnected',
 }
 
-// Model
-export type Model = Loading | Init | Select | WaitingRoom | Playing | Error
+export type Rooms = Room[]
 
-// Todo: In a multiplayer mode, the model probably needs needs support multiprocessing like this..
-// export type Model = Room[]
-// type Room = Loading | Init | Select | WaitingRoom | Playing | Error
-// But then, the gameloop sort of always needs to run.
-// Either that, or we need to spin up new server instances for each unique room with the current model
-
-export interface Game {
+export type Room = {
+  id: UUID
+  state: Loading | Init | Select | WaitingRoom | Playing | Error
   players: Player[]
   fruit: Fruit
 }
 
-export interface Loading extends Game {
-  state: State.Loading
-}
-
-export interface Init extends Game {
-  state: State.Init
-}
-
-export interface Playing extends Game {
-  state: State.Playing
-}
-
-export interface Select extends Game {
-  state: State.Select
-}
-
-export interface WaitingRoom extends Game {
-  state: State.WaitingRoom
-}
-
-export interface Error extends Game {
-  state: State.Error
-}
+type Loading = State.Loading
+type Init = State.Init
+type Playing = State.Playing
+type Select = State.Select
+type WaitingRoom = State.WaitingRoom
+type Error = State.Error
 
 export interface Input {
   color: Color
@@ -94,21 +74,21 @@ export interface Input {
 }
 
 export interface CreateRoomInput {
-  playerId: string
+  playerId: UUID
   name: string
   color: Color
 }
 
 export interface JoinRoomInput {
-  roomId: string
-  playerId: string
+  roomId: UUID
+  playerId: UUID
   name: string
   color: Color
 }
 
 export interface ReadyInput {
-  playerId: string
-  roomId: string
+  playerId: UUID
+  roomId: UUID
 }
 
 export type NewPlayerInput = CreateRoomInput
@@ -133,8 +113,9 @@ export interface Fruit {
 }
 
 export interface Player {
-  id: string
-  roomId: string
+  id: UUID
+  roomId: UUID
+  ready: boolean
   name: string
   color: Color
   size: number

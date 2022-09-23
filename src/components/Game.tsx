@@ -3,7 +3,7 @@ import Leaderboard from './Leaderboard'
 import { Player, Fruit, Settings } from 'shared-types'
 
 interface Props {
-  socketId: string
+  socketId: UUID
   settings: Settings
   players: Player[]
   fruit: Fruit | null
